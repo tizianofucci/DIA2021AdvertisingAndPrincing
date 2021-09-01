@@ -20,3 +20,6 @@ for price in prices:
     print("price = {}".format(price))
     plt.show()
     #print(z)
+    samples = np.random.poisson((3.0/(2*(price-3.5))), (math.ceil(325 / 30))) #n months left, including current month
+    print(samples)
+
