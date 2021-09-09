@@ -19,8 +19,8 @@ p = np.array([0.9, 0.85, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05])
 prices = np.array([4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5])
 
 
-T = 5000
-n_experiment = 20
+T = 365
+n_experiment = 60
 delay = 30
 mu_new_customer = 12
 sigma_new_customer = math.sqrt(4)
