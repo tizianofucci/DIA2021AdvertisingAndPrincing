@@ -15,12 +15,12 @@ import scipy.stats as stats
 from scipy.stats import norm
 
 n_arms = 10
-p = np.array([0.9, 0.85, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.01])
+p = np.array([0.9, 0.85, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05])
 prices = np.array([4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5])
 
 
-T = 1000
-n_experiment = 100
+T = 5000
+n_experiment = 20
 delay = 30
 mu_new_customer = 12
 sigma_new_customer = math.sqrt(4)
@@ -91,16 +91,16 @@ plt.show()
 
 
 x=np.arange(1,80,0.01)
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[0], gts_learner.std_reward[0]), label='0')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[1], gts_learner.std_reward[1]), label='1')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[2], gts_learner.std_reward[2]), label='2')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[3], gts_learner.std_reward[3]), label='3')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[4], gts_learner.std_reward[4]), label='4')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[5], gts_learner.std_reward[5]), label='5')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[6], gts_learner.std_reward[6]), label='6')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[7], gts_learner.std_reward[7]), label='7')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[8], gts_learner.std_reward[8]), label='8')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[9], gts_learner.std_reward[9]), label='9')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[0], 1/gts_learner.precision_of_rewards[0]), label='0')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[1], 1/gts_learner.precision_of_rewards[1]), label='1')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[2], 1/gts_learner.precision_of_rewards[2]), label='2')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[3], 1/gts_learner.precision_of_rewards[3]), label='3')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[4], 1/gts_learner.precision_of_rewards[4]), label='4')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[5], 1/gts_learner.precision_of_rewards[5]), label='5')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[6], 1/gts_learner.precision_of_rewards[6]), label='6')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[7], 1/gts_learner.precision_of_rewards[7]), label='7')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[8], 1/gts_learner.precision_of_rewards[8]), label='8')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[9], 1/gts_learner.precision_of_rewards[9]), label='9')
 
 
 plt.legend()
