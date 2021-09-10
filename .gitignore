@@ -8,5 +8,5 @@
 *.fdb_latexmk
 
 
-
+*.cpython-39.pyc
 *.pyc

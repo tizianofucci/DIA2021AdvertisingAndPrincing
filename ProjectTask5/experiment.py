@@ -1,0 +1,92 @@
+import numpy as np
+import pandas as pd
+import math
+import matplotlib.pyplot as plt
+from queue import Queue
+from scipy.stats import norm
+
+from BiddingEnvironment import *
+from GaussianTS_Learner import *
+
+n_arms = 10
+
+price = 5.5 #fixed
+conv_rate = 0.2 #prob of buying after click, known
+T = 365
+n_experiment = 100
+delay = 30
+mu_new_customer = 12
+sigma_new_customer = math.sqrt(4)
+
+#p = np.array([]) #p
+#bids = np.array([0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6])
+bids = np.array([0.5,0.7,0.9,1.1,1.4,1.5,1.7,1.9,2.1,2.3])
+
+bid_modifiers = np.array([0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0])
+
+
+opt_bid = bids[5]
+
+delta_customers = 5*(bid_modifiers[5]**2)
+
+opt = (conv_rate*price*(mu_new_customer + delta_customers)* ((15-2*price)+1)) - (opt_bid - opt_bid/10) * (mu_new_customer + delta_customers)
+
+
+ts_rewards_per_experiment = []
+ucb_rewards_per_experiment = []
+
+medie_di_medie = []
+
+pulled_arm_buffer_ts = Queue(maxsize=31)
+pulled_arm_buffer_ucb = Queue(maxsize=31)
+
+for e in range(0,n_experiment):
+    env = BiddingEnvironment(n_arms, price, bids, bid_modifiers, conv_rate, mu_new_customer, sigma_new_customer)
+    gts_learner = GaussianTS_Learner(n_arms,delay)
+
+    pulled_arm_buffer_ts.queue.clear()
+    
+
+    for t in range (0,T):
+
+        pulled_arm_buffer_ts.put(gts_learner.pull_arm())
+        
+
+        if t>=delay:
+
+            after_30_days_arm_ts = pulled_arm_buffer_ts.get()
+            rewards = env.round(after_30_days_arm_ts)
+            gts_learner.update(after_30_days_arm_ts,rewards)
+
+    ts_rewards_per_experiment.append(gts_learner.collected_rewards)
+    
+    medie_di_medie = np.append(medie_di_medie,np.mean(env.total_returns_per_arm[0]))
+    print(e)
+
+
+print(np.mean(medie_di_medie))
+plt.figure(0)
+plt.xlabel("t")
+plt.ylabel("Regret")
+plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r')
+plt.legend(["TS"])
+plt.show()
+
+
+
+x=np.arange(-100,100,0.01)
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[0], 1/gts_learner.precision_of_rewards[0]), label='0')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[1], 1/gts_learner.precision_of_rewards[1]), label='1')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[2], 1/gts_learner.precision_of_rewards[2]), label='2')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[3], 1/gts_learner.precision_of_rewards[3]), label='3')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[4], 1/gts_learner.precision_of_rewards[4]), label='4')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[5], 1/gts_learner.precision_of_rewards[5]), label='5')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[6], 1/gts_learner.precision_of_rewards[6]), label='6')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[7], 1/gts_learner.precision_of_rewards[7]), label='7')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[8], 1/gts_learner.precision_of_rewards[8]), label='8')
+plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[9], 1/gts_learner.precision_of_rewards[9]), label='9')
+
+for i in range(len(gts_learner.means_of_rewards)):
+    print("mean: {}, cdf in 0: {}".format(gts_learner.means_of_rewards[i],norm.cdf(0, gts_learner.means_of_rewards[i], 1/gts_learner.precision_of_rewards[i])))
+plt.legend()
+plt.show()
