@@ -14,17 +14,26 @@ import math
 from scipy.stats import norm
 
 n_arms = 10
-p = np.array([0.9, 0.85, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05])
+p = np.array([0.85, 0.78, 0.71, 0.64, 0.57, 0.5, 0.43, 0.36, 0.1, 0.9])
 prices = np.array([4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5])
 
-bid = 0.2
+bid = 1
 T = 365
-n_experiment = 200
+n_experiment = 100
 delay = 30
 mu_new_customer = 12
 sigma_new_customer = math.sqrt(4)
 
-opt = (p[1]*prices[1]*mu_new_customer * ((10.5)+1)) - (bid - bid/10) * mu_new_customer 
+opt = (p[1]*prices[1]*mu_new_customer * (3.0/(2*(prices[1] - 3.5))+1)) - (bid - bid/10) * mu_new_customer 
+
+def expected(arm):
+    return (p[arm]*(prices[arm]-3)*mu_new_customer * (3.0/(2*(prices[arm] - 3.5))+1)) - (bid - bid/10) * mu_new_customer 
+
+expected_rewards = [expected(x) for x in range(n_arms)]
+print("expected rewards:\n", expected_rewards)
+
+opt_arm = np.argmax(expected_rewards)
+opt = expected_rewards[opt_arm]
 
 
 #mu = 0
@@ -92,7 +101,7 @@ plt.show()
 
 
 
-x=np.arange(50,600,0.01)
+x=np.arange(-100,600,0.01)
 plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[0], 1/gts_learner.precision_of_rewards[0]), label='0')
 plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[1], 1/gts_learner.precision_of_rewards[1]), label='1')
 plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[2], 1/gts_learner.precision_of_rewards[2]), label='2')

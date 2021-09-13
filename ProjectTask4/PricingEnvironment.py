@@ -33,6 +33,8 @@ class Customer_class(Environment):
         self.sigma_new = sigma_new
         self.total_returns_per_arm = [[] for _ in range(n_arms)]
         self.features_vector = features_vector
+    
+    #TODO differenziare le poisson per classe
     def round(self,pulled_arm,bid):
         
         new_customers = abs(round(np.random.normal(self.mu_new,self.sigma_new)))

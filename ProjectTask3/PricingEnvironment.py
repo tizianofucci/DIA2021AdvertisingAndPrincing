@@ -1,3 +1,4 @@
+from numpy.core.fromnumeric import prod
 from Environment import Environment
 import numpy as np
 
@@ -25,12 +26,13 @@ class PricingEnvironment(Environment):
         n_returns = np.zeros(int(sells))
 
         for i in range(0,int(sells)):
-            n_returns[i] = abs(round(np.random.normal(15 - self.prices[pulled_arm],3)))
+            n_returns[i] = np.random.poisson(3.0/(2*(self.prices[pulled_arm] - 3.5)))
 
-        costs = np.sum(single_cost_per_click)
         total_returns = np.sum(n_returns)
+        costs = np.sum(single_cost_per_click)
+        production_costs = 3*(total_returns +sells)
         self.total_returns_per_arm[pulled_arm] = np.append(self.total_returns_per_arm[pulled_arm],total_returns)
-        money_reward = ((sells + total_returns) * self.prices[pulled_arm]) - costs
+        money_reward = ((sells + total_returns) * self.prices[pulled_arm]) - costs - production_costs
         return money_reward
 
         
