@@ -17,8 +17,8 @@ class BiddingEnvironment():
         #self.results = ""
 
     def round(self,pulled_arm):
-        delta_customers = 5*(self.bid_modifiers[pulled_arm]*2)
-        new_customers = round(np.random.normal(round(self.mu_new + delta_customers),self.sigma_new))
+        delta_customers = 200*(self.bid_modifiers[pulled_arm]*2)
+        new_customers = round(np.random.normal((self.mu_new + delta_customers),self.sigma_new))
         single_rewards = np.zeros(new_customers)
         single_cost_per_click = np.zeros(new_customers)
 
@@ -31,7 +31,7 @@ class BiddingEnvironment():
         n_returns = np.zeros(int(sells))
 
         for i in range(0,int(sells)):
-            n_returns[i] = max(0, (round(np.random.normal(15 - 2*self.price,2))))
+            n_returns[i] = max(0, (round(np.random.normal(15 - 2*self.price,1))))
             #n_returns[i] = 15-2*self.price
 
         costs = np.sum(single_cost_per_click)

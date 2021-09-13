@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.core.fromnumeric import argmax
 import pandas as pd
 import math
 import matplotlib.pyplot as plt
@@ -10,24 +11,32 @@ from GaussianTS_Learner import *
 
 n_arms = 10
 
-price = 5.5 #fixed
-conv_rate = 0.5 #prob of buying after click, known
+price = 4.5 #fixed
+conv_rate = 0.1 #prob of buying after click, known
 T = 365
 n_experiment = 100
 delay = 30
 mu_new_customer = 12
-sigma_new_customer = math.sqrt(4)
+sigma_new_customer = math.sqrt(1)
 
-#bids = np.array([0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6])
-bids = np.array([0.5,0.7,0.9,1.1,1.4,1.5,1.7,1.9,2.1,2.3])
 
-bid_modifiers = np.array([0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,1.8])
+#bids = np.array([0.5,0.7,0.9,1.1,1.4,1.5,1.7,1.9,2.1,2.3])
+#bids = np.array([0.9,1.1,1.3,1.5,1.7,1.9,2.1,2.3,2.5,2.7])
+bids = 2*np.array([0.9,1.1,1.3,1.5,1.7,1.9,2.1,2.3,2.5,2.7])
 
-opt_bid = bids[8]
+#bid_modifiers = np.array([0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,1.8])
+bid_modifiers = np.array([0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 0.9, 0.9, 1.4, 1.4])
 
-delta_customers = 5*(bid_modifiers[8]*2)
+def expected(arm):
+    bid = bids[arm]
+    delta_customers = 200*(bid_modifiers[arm]*2)
+    return conv_rate*(mu_new_customer + delta_customers)*price*(15 - 2*price + 1) - (bid - bid/10) * (mu_new_customer + delta_customers)
 
-opt = conv_rate*(round(mu_new_customer + delta_customers))*price*(15 - 2*price + 1) - (opt_bid - opt_bid/10) * round(mu_new_customer + delta_customers)
+expected_rewards = [expected(x) for x in range(n_arms)]
+print("expected rewards:\n", expected_rewards)
+
+opt_arm = argmax(expected_rewards)
+opt = expected_rewards[opt_arm]
 
 
 ts_rewards_per_experiment = []
@@ -36,6 +45,8 @@ ucb_rewards_per_experiment = []
 
 pulled_arm_buffer_ts = Queue(maxsize=31)
 pulled_arm_buffer_ucb = Queue(maxsize=31)
+
+opt_count = 0
 
 for e in range(0,n_experiment):
     env = BiddingEnvironment(n_arms, price, bids, bid_modifiers, conv_rate, mu_new_customer, sigma_new_customer)
@@ -58,9 +69,14 @@ for e in range(0,n_experiment):
     ts_rewards_per_experiment.append(gts_learner.collected_rewards)
     #print(env.results)
     print(e)
+    n_pulls_per_arm = [len(x) for x in gts_learner.rewards_per_arm]
+    print(n_pulls_per_arm)
+    if (argmax(n_pulls_per_arm) == opt_arm):
+        opt_count +=1
+    
 
-
-print("optimal= {}".format(opt))
+print("optimal arm found {} times out of {}".format(opt_count ,n_experiment))
+#print("optimal= {}".format(opt))
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
