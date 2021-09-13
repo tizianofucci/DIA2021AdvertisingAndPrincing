@@ -16,7 +16,7 @@ from scipy.stats import norm
 n_arms = 10
 contexts_prob = np.array([  np.array([np.array([0.9, 0.85, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05]),
                             np.array([0.9, 0.85, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05])]),
-                            np.array([np.array([0.3, 0.4, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),
+                            np.array([np.array([0.3, 0.4, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.7]),
                             np.array([0.3, 0.4, 0.7, 0.7, 0.6, 0.6, 0.55, 0.55, 0.5, 0.5])])])
 prices = np.array([4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5])
 
@@ -27,7 +27,7 @@ features_matrix = [[0,0],
 features_column_to_class = [0,0,1,2]
 
 bid = 0.2
-T = 1000
+T = 365
 n_experiment = 30
 delay = 30
 contexts_mu = np.array([ np.array([10,10]) ,
@@ -64,7 +64,8 @@ for e in range(0,n_experiment):
             after_30_days_arm_ts = pulled_arm_buffer_ts.get()
             rewards,users_segmentation = env.round(after_30_days_arm_ts,bid)
             context_gts_learner.update(after_30_days_arm_ts,rewards,users_segmentation)
-            context_gts_learner.try_splitting(users_segmentation)
+            if t>=50 and t%5==0:
+                context_gts_learner.try_splitting()
 
     ts_rewards_per_experiment.append(context_gts_learner.collected_rewards)    
     print(e)
@@ -78,7 +79,7 @@ plt.legend(["TS","UCB"])
 plt.show()
 
 x=np.arange(50,700,0.01)
-for _ in range(len(features_column_to_class)):  
+for _ in range(len(context_gts_learner.active_learners)):  
     for i in range(n_arms):
         plt.plot(x, norm.pdf(x, context_gts_learner.learners[_].means_of_rewards[i], 1/context_gts_learner.learners[_].precision_of_rewards[i]), label=str(i))
     plt.legend()

@@ -35,7 +35,7 @@ class Customer_class(Environment):
         self.features_vector = features_vector
     def round(self,pulled_arm,bid):
         
-        new_customers = round(np.random.normal(self.mu_new,self.sigma_new))
+        new_customers = abs(round(np.random.normal(self.mu_new,self.sigma_new)))
         single_rewards = np.zeros(np.sum(new_customers))
         single_cost_per_click = np.zeros(np.sum(new_customers))
 
