@@ -3,30 +3,33 @@ import numpy as np
 
 # conversion prob is known
 # reward = ((sells + total_returns) * self.prices[pulled_arm]) - costs
-class BiddingEnvironment():
+class PricingBiddingEnvironment():
     
-    def __init__(self, n_arms, price, prod_cost, bids, bid_modifiers, conv_rate, mu_new, sigma_new):
+    def __init__(self, prices, prod_cost, bids, bid_modifiers, first_buy_probabilities, mu_new, sigma_new):
         #super().__init__(n_arms, probabilities)
-        self.price = price
+        self.idx_price = 1
+        self.idx_bid = 0
+
+        self.prices = prices
         self.prod_cost = prod_cost
         self.bids = bids
         self.bid_modifiers = bid_modifiers
-        self.conv_rate = conv_rate
+        self.first_buy_probabilities = first_buy_probabilities
         self.mu_new = mu_new
         self.sigma_new = sigma_new
-        self.total_returns_per_arm = [[] for _ in range(n_arms)]
+        
         #self.results = ""
 
     def round(self,pulled_arm):
-        delta_customers = 200*(self.bid_modifiers[pulled_arm]*2)
+        delta_customers = 200*(self.bid_modifiers[pulled_arm[self.idx_bid]]*2)
         new_customers = round(np.random.normal((self.mu_new + delta_customers),self.sigma_new))
         single_rewards = np.zeros(new_customers)
         single_cost_per_click = np.zeros(new_customers)
 
         for i in range (0, new_customers):
             customer = Customer(self.conv_rate)
-            single_rewards[i] = customer.round_costumer()
-            single_cost_per_click[i] = self.bids[pulled_arm] - abs(np.random.normal(self.bids[pulled_arm], 0.1))/10
+            single_rewards[i] = customer.round_costumer(pulled_arm[self.idx_price])
+            single_cost_per_click[i] = self.bids[pulled_arm[self.idx_bids]] - abs(np.random.normal(self.bids[pulled_arm[self.idx_bid]], 0.1))/10
 
         sells = np.sum(single_rewards)
         n_returns = np.zeros(int(sells))
@@ -38,7 +41,7 @@ class BiddingEnvironment():
 
         costs = np.sum(single_cost_per_click)
         total_returns = np.sum(n_returns)
-        self.total_returns_per_arm[pulled_arm] = np.append(self.total_returns_per_arm[pulled_arm],total_returns)
+        
         money_reward = ((sells + total_returns) * (self.price - self.prod_cost)) - costs
         
         #self.results = "arm: {}, sales: {}, total_returns: {}, costs: {}, total:{}".format(pulled_arm, sells, total_returns, costs, money_reward)
@@ -46,9 +49,8 @@ class BiddingEnvironment():
         return money_reward
 
 class Customer():
-    def __init__(self,conv_rate):
-        self.conv_rate = conv_rate
-
-    def round_costumer(self):
-        reward = np.random.binomial(1, self.conv_rate)
+    def __init__(self,first_buy_probabilities):
+        self.first_buy_probabilities = first_buy_probabilities
+    def round_costumer(self,idx):
+        reward = np.random.binomial(1, self.first_buy_probabilities[idx])
         return reward
