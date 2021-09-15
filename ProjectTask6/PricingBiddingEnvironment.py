@@ -27,22 +27,22 @@ class PricingBiddingEnvironment():
         single_cost_per_click = np.zeros(new_customers)
 
         for i in range (0, new_customers):
-            customer = Customer(self.conv_rate)
+            customer = Customer(self.first_buy_probabilities)
             single_rewards[i] = customer.round_costumer(pulled_arm[self.idx_price])
-            single_cost_per_click[i] = self.bids[pulled_arm[self.idx_bids]] - abs(np.random.normal(self.bids[pulled_arm[self.idx_bid]], 0.1))/10
+            single_cost_per_click[i] = self.bids[pulled_arm[self.idx_bid]] - abs(np.random.normal(self.bids[pulled_arm[self.idx_bid]], 0.1))/10
 
         sells = np.sum(single_rewards)
         n_returns = np.zeros(int(sells))
 
+
+        
         for i in range(0,int(sells)):
-            #n_returns[i] = max(0, (round(np.random.normal(15 - 2*self.price,1))))
-            n_returns[i] = np.random.poisson(3.0/(2*(self.price - 3.5)))
-            #n_returns[i] = 15-2*self.price
+            n_returns[i] = np.random.poisson((3.0/(2*((self.prices[pulled_arm[self.idx_price]])/10)+0.5)))
 
         costs = np.sum(single_cost_per_click)
         total_returns = np.sum(n_returns)
         
-        money_reward = ((sells + total_returns) * (self.price - self.prod_cost)) - costs
+        money_reward = ((sells + total_returns) * (self.prices[pulled_arm[self.idx_price]] - self.prod_cost)) - costs
         
         #self.results = "arm: {}, sales: {}, total_returns: {}, costs: {}, total:{}".format(pulled_arm, sells, total_returns, costs, money_reward)
 

@@ -4,12 +4,13 @@ import numpy as np
 
 class PricingEnvironment(Environment):
     
-    def __init__(self,n_arms,prices,probabilities,mu_new,sigma_new):
+    def __init__(self,n_arms,prices,probabilities,mu_new,sigma_new,unitary_cost):
         super().__init__(n_arms,probabilities)
         self.prices = prices
         self.mu_new = mu_new
         self.sigma_new = sigma_new
         self.total_returns_per_arm = [[] for _ in range(n_arms)]
+        self.unitary_cost = unitary_cost
 
     #TODO poisson per i ritorni
     def round(self,pulled_arm,bid):
@@ -30,7 +31,7 @@ class PricingEnvironment(Environment):
 
         total_returns = np.sum(n_returns)
         costs = np.sum(single_cost_per_click)
-        production_costs = 3*(total_returns +sells)
+        production_costs = self.unitary_cost*(total_returns +sells)
         self.total_returns_per_arm[pulled_arm] = np.append(self.total_returns_per_arm[pulled_arm],total_returns)
         money_reward = ((sells + total_returns) * self.prices[pulled_arm]) - costs - production_costs
         return money_reward

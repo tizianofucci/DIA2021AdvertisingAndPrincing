@@ -14,11 +14,12 @@ import math
 from scipy.stats import norm
 
 n_arms = 10
-p = np.array([0.85, 0.78, 0.71, 0.64, 0.57, 0.5, 0.43, 0.36, 0.1, 0.9])
+p = np.array([0.85, 0.78, 0.71, 0.64, 0.57, 0.5, 0.43, 0.36, 0.1, 0.7])
 prices = np.array([4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5])
 
 bid = 1
-T = 365
+unitary_cost = 3
+T = 1000
 n_experiment = 100
 delay = 30
 mu_new_customer = 12
@@ -53,7 +54,7 @@ pulled_arm_buffer_ts = Queue(maxsize=31)
 pulled_arm_buffer_ucb = Queue(maxsize=31)
 
 for e in range(0,n_experiment):
-    env = PricingEnvironment(n_arms,prices,p,mu_new_customer,sigma_new_customer)
+    env = PricingEnvironment(n_arms,prices,p,mu_new_customer,sigma_new_customer,unitary_cost)
 #    ts_learner = TS_Learner(n_arms)
     gts_learner = GaussianTS_Learner(n_arms,delay)
     ucb_learner = UCB_Learner(n_arms,delay)
