@@ -9,7 +9,7 @@ class GaussianTS_Learner(Learner):
 
         self.τ_0 = 0.0001  # the posterior precision
         self.μ_0 = 1       # the posterior mean
-        self.τ = 0.01 #0.004
+        self.τ = 0.008 #0.004
         self.means_of_rewards = [1 for _ in range(self.n_arms)]
         self.precision_of_rewards = [self.τ_0 for _ in range(self.n_arms)]
         self.delay = delay
@@ -29,9 +29,10 @@ class GaussianTS_Learner(Learner):
                         mask[i] = 1
                 if (sum(mask) == len(mask)):
                     raise Exception('negative revenue on all arms')
-                samples = np.random.normal(self.means_of_rewards,np.divide(1, self.precision_of_rewards))
-                masked_samples = np.ma.masked_array(samples, mask)
-                idx = np.argmax(masked_samples)
+                masked_means = np.ma.masked_array(self.means_of_rewards, mask)
+                masked_sigmas = np.ma.masked_array(np.divide(1, self.precision_of_rewards), mask)
+                samples = np.random.normal(masked_means, masked_sigmas)
+                idx = np.argmax(samples)
 
 
         self.t += 1
