@@ -28,7 +28,7 @@ features_column_to_class = [0,0,1,2]
 
 bid = 0.2
 T = 365
-n_experiment = 10
+n_experiment = 50
 delay = 30
 contexts_mu = np.array([ np.array([10,10]) ,
                          np.array([20,50])])
