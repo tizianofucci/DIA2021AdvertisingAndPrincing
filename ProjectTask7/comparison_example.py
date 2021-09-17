@@ -13,6 +13,7 @@ from Environment import *
 from PricingBiddingEnvironment import *
 from ContextGPTS_Learner import *
 import math
+from matplotlib import cm
 from scipy.stats import norm
 
 n_arms = 10
@@ -44,6 +45,8 @@ contexts_mu = np.array([ np.array([10,10]) ,
 contexts_sigma = np.array([ np.array([math.sqrt(4),math.sqrt(4)]) ,
                          np.array([math.sqrt(6),math.sqrt(8)])])
 
+
+
 def expected(arm_bids,arm_price,feature_a,feature_b):
     bid = bids[arm_bids]
     price = prices[arm_price]
@@ -54,21 +57,12 @@ opt = []
 for i in range(2):
     for j in range(2):
         expected_rewards = [expected(x,y,i,j) for x in range(len(bids)) for y in range(len(prices))]
-        #print("expected rewards:\n", expected_rewards)
         opt_arm = argmax(expected_rewards)
         print(np.unravel_index(opt_arm,(10,10)))
         opt.append(expected_rewards[opt_arm])
         print(expected_rewards[opt_arm])
 opt = np.sum(opt)
 print(opt)
-
-
-#mu = 0
-#variance = 1
-#sigma = math.sqrt(variance)
-#x = np.linspace(mu_new_customer - 3*sigma_new_customer, mu_new_customer + 3*sigma_new_customer, 100)
-#plt.plot(x, stats.norm.pdf(x, mu_new_customer, sigma_new_customer))
-#plt.show()
 
 ts_rewards_per_experiment = []
 
@@ -93,19 +87,20 @@ for e in range(0,n_experiment):
     ts_rewards_per_experiment.append(context_gpts_learner.collected_rewards)    
     print(e)
 
-
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
 plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r')
-plt.legend(["TS","UCB"])
+plt.legend(["TS"])
 plt.show()
 
-# x=np.arange(50,700,0.01)
-# for _ in range(len(context_gpts_learner.active_learners)):  
-#     for i in range(n_arms):
-#         plt.plot(x, norm.pdf(x, context_gpts_learner.learners[_].means_of_rewards[i], 1/context_gpts_learner.learners[_].precision_of_rewards[i]), label=str(i))
-#     plt.legend()
-#     plt.show()
+X, Y =  np.meshgrid(prices,bids)
+for i in range(len(context_gpts_learner.learners)):
+    if context_gpts_learner.active_learners[i] == True:
+        Z = context_gpts_learner.learners[i].means.reshape(len(bids),len(prices))
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+        surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
+                       linewidth=0, antialiased=False)
+        fig.colorbar(surf, shrink=0.5, aspect=5)
 
-
+plt.show()
