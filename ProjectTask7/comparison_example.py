@@ -36,19 +36,13 @@ bid_modifiers = np.array([  np.array([np.array([0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 
                             np.array([np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),
                             np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])])])
 
-T = 115
-n_experiment = 5
+T = 300
+n_experiment = 1
 delay = 30
 contexts_mu = np.array([ np.array([10,10]) ,
                          np.array([10,10])])
 contexts_sigma = np.array([ np.array([math.sqrt(4),math.sqrt(4)]) ,
                          np.array([math.sqrt(6),math.sqrt(8)])])
-
-# opt = (contexts_prob[0][1][0]*prices[0]*contexts_mu[0][1] * (3.0/(2*(prices[0] - 3.5))+1)) - (bid - bid/10) * contexts_mu[0][1] + \
-#      (contexts_prob[0][1][0]*prices[0]*contexts_mu[0][1] * (3.0/(2*(prices[0] - 3.5))+1)) - (bid - bid/10) * contexts_mu[0][1] + \
-#     (contexts_prob[1][0][9]*prices[9]*contexts_mu[1][0] * (3.0/(2*(prices[9] - 3.5))+1)) - (bid - bid/10) * contexts_mu[1][0] + \
-#     (contexts_prob[1][1][2]*prices[2]*contexts_mu[1][1] * (3.0/(2*(prices[2] - 3.5))+1)) - (bid - bid/10) * contexts_mu[1][1]
-
 
 def expected(arm_bids,arm_price,feature_a,feature_b):
     bid = bids[arm_bids]
@@ -92,10 +86,10 @@ for e in range(0,n_experiment):
             after_30_days_arm_ts = pulled_arm_buffer_ts.get()
             rewards,users_segmentation = env.round(after_30_days_arm_ts)
             context_gpts_learner.update(after_30_days_arm_ts,rewards,users_segmentation)
-            if t>=80 and t%5==0:
+            if t>=160 and t%5==0:
                 context_gpts_learner.try_splitting()
-        if t%20 ==0:
-            print(t)
+        # if t%20 ==0:
+        #     print(t)
     ts_rewards_per_experiment.append(context_gpts_learner.collected_rewards)    
     print(e)
 

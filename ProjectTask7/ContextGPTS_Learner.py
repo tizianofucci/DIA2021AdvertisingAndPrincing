@@ -42,7 +42,7 @@ class ContextGPTS_Learner():
         self.collected_rewards = np.append(self.collected_rewards,np.sum(actual_rewards[self.active_learners]))
 
     def lower_bound(self,id,best_arms):
-        return self.learners[id].means[best_arms[id]] - 30 * self.learners[id].sigmas[best_arms[id]]
+        return self.learners[id].means[best_arms[id]] - 95 * self.learners[id].sigmas[best_arms[id]]
 
 
 
@@ -56,7 +56,7 @@ class ContextGPTS_Learner():
 
             if proposed_split > self.lower_bound(0,best_arms):
                 if proposed_split == split_a:
-                    print("Learner attivati : 0x 1x")
+                    print("Learner attivati : 0x 1x (OK)")
                     self.active_learners = [False,True,True,False,False,False,False,False,False]
                 if proposed_split == split_b:
                     print("Learner attivati : x0 x1")
@@ -71,7 +71,7 @@ class ContextGPTS_Learner():
                 print("Learner attivati : 00 01 1x")
 
             elif split_b >self.lower_bound(2,best_arms) :
-                print("Learner attivati : 0x 10 11")
+                print("Learner attivati : 0x 10 11 (OKOK)")
                 self.active_learners = [False,True,False,False,False,False,False,True,True]
 
         elif self.active_learners == [False,False,False,True,True,False,False,False,False]:

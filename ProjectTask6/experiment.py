@@ -101,8 +101,6 @@ plt.show()
 X, Y =  np.meshgrid(prices,bids)
 Z = gpts_learner.means.reshape(len(bids),len(prices))
 
-
-
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
                        linewidth=0, antialiased=False)
