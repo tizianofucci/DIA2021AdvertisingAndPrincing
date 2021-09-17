@@ -13,15 +13,32 @@ from Environment import *
 from PricingBiddingEnvironment import *
 from ContextGPTS_Learner import *
 import math
+from math import e
 from matplotlib import cm
 from scipy.stats import norm
 
-n_arms = 10
-contexts_prob = np.array([  np.array([np.array([0.9, 0.85, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05]),
-                            np.array([0.9, 0.85, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05])]),
-                            np.array([np.array([0.6, 0.55, 0.5, 0.7, 0.5, 0.5, 0.5, 0.3, 0.2, 0.0]),
-                            np.array([0.3, 0.4, 0.7, 0.7, 0.6, 0.6, 0.55, 0.55, 0.5, 0.5])])])
+
+def conv_c1(x):
+    
+    return 1.4* e** (-0.14*x)
+
+def conv_c2(x):
+    return 0.1 + 6* e** (-0.6*x)
+    
+def conv_c3(x):
+    if x < 6.0:
+        return 0.8*e**(-0.5*((x-5.5)**2))
+    else:
+        return 20 * (e**(-0.557*x))
+
+
 prices = np.array([4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5])
+n_arms = 10
+contexts_prob = np.array([  np.array([np.array([conv_c1(x) for x in prices]),
+                            np.array([conv_c1(x) for x in prices])]),
+                            np.array([np.array([conv_c2(x) for x in prices]),
+                            np.array([conv_c3(x) for x in prices])])])
+
 prod_cost = 3.0
 
 features_matrix = [[0,0],
@@ -34,10 +51,10 @@ bids = np.array([0.9,1.1,1.3,1.5,1.7,1.9,2.1,2.3,2.5,2.7])
 
 bid_modifiers = np.array([  np.array([np.array([0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 0.9, 0.9, 1.4, 1.4]),
                             np.array([0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 0.9, 0.9, 1.4, 1.4])]),
-                            np.array([np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]),
-                            np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])])])
+                            np.array([np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]),
+                            np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5])])])
 
-T = 300
+T = 200
 n_experiment = 1
 delay = 30
 contexts_mu = np.array([ np.array([10,10]) ,
@@ -45,13 +62,20 @@ contexts_mu = np.array([ np.array([10,10]) ,
 contexts_sigma = np.array([ np.array([math.sqrt(4),math.sqrt(4)]) ,
                          np.array([math.sqrt(6),math.sqrt(8)])])
 
+contexts_bid_offsets = np.array([ np.array([10,10]) ,
+                                 np.array([15,5])])
+
+contexts_n_returns_coeffs = np.array([ np.array([4.0,4.0]) ,
+                                 np.array([2.0,3.0])])
 
 
 def expected(arm_bids,arm_price,feature_a,feature_b):
     bid = bids[arm_bids]
     price = prices[arm_price]
-    delta_customers = 200*(bid_modifiers[feature_a][feature_b][arm_bids]*2)
-    return (contexts_prob[feature_a][feature_b][arm_price]*(price - prod_cost)*(contexts_mu[feature_a][feature_b] +delta_customers) * ((3.0/(2*((price)/10)+0.5)) + 1)) - (bid - bid/10) * (contexts_mu[feature_a][feature_b] + delta_customers)
+    n_returns = (contexts_n_returns_coeffs[feature_a][feature_b]/(2*(price/10)+0.5))
+    bid_offset = contexts_bid_offsets[feature_a][feature_b]
+    delta_customers = 50*(bid_modifiers[feature_a][feature_b][arm_bids]*2)
+    return (contexts_prob[feature_a][feature_b][arm_price]*(price - prod_cost)*(contexts_mu[feature_a][feature_b] +delta_customers) * (n_returns + 1)) - (bid - bid/bid_offset) * (contexts_mu[feature_a][feature_b] + delta_customers)
 
 opt = []
 for i in range(2):
@@ -69,7 +93,7 @@ ts_rewards_per_experiment = []
 pulled_arm_buffer_ts = Queue(maxsize=31)
 
 for e in range(0,n_experiment):
-    env = ContextEnvironment(prices,prod_cost,bids,bid_modifiers,contexts_prob,contexts_mu,contexts_sigma,features_matrix)
+    env = ContextEnvironment(prices,prod_cost,bids,bid_modifiers,contexts_bid_offsets, contexts_prob,contexts_mu,contexts_sigma, contexts_n_returns_coeffs, features_matrix)
     context_gpts_learner = ContextGPTS_Learner(len(bids),len(prices),[bids,prices],delay,features_matrix)
     pulled_arm_buffer_ts.queue.clear()
 
@@ -82,8 +106,8 @@ for e in range(0,n_experiment):
             context_gpts_learner.update(after_30_days_arm_ts,rewards,users_segmentation)
             if t>=160 and t%5==0:
                 context_gpts_learner.try_splitting()
-        # if t%20 ==0:
-        #     print(t)
+        if t%20 ==0:
+            print(t)
     ts_rewards_per_experiment.append(context_gpts_learner.collected_rewards)    
     print(e)
 
