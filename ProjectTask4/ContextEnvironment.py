@@ -2,8 +2,8 @@ from PricingEnvironment import PricingEnvironment
 import numpy as np
 
 class ContextEnvironment():
-    def __init__(self,n_arms,prices,contexts_prob,contexts_mu,contexts_sigma,features_matrix):
-        self.environments = [PricingEnvironment(n_arms,prices,contexts_prob,contexts_mu,contexts_sigma,features_matrix) for _ in range(4)]
+    def __init__(self,n_arms,prices, prod_cost, contexts_prob,context_bid_offsets, contexts_mu,contexts_sigma,contexts_n_returns_coeff,features_matrix):
+        self.environments = [PricingEnvironment(n_arms,prices, prod_cost, contexts_prob, context_bid_offsets, contexts_mu,contexts_sigma,contexts_n_returns_coeff,features_matrix) for _ in range(4)]
 
     def round(self,after_30_days_arm_ts,bid):
         rewards = [np.array([]) for i in range(4)]

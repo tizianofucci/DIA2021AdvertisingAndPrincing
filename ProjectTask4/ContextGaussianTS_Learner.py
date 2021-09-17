@@ -42,8 +42,9 @@ class ContextGaussianTS_Learner():
         self.collected_rewards = np.append(self.collected_rewards,np.sum(actual_rewards[self.active_learners]))
 
     def lower_bound(self,id,best_arms):
-        return self.learners[id].means_of_rewards[best_arms[id]] - 1/self.learners[id].precision_of_rewards[best_arms[id]]
+        return self.learners[id].means_of_rewards[best_arms[id]] - 5 * 1/self.learners[id].precision_of_rewards[best_arms[id]]
 
+ 
 
 
     def try_splitting(self):
