@@ -67,7 +67,7 @@
 
 % Here we go
 \title{Data Intelligence Applications Homework}
-\author{D'Amato Francesco, \\
+\author{D'Amato Francesco - 10560062 - 945814, \\
 	Frantuma Elia - 10567359 - 945729, \\
 	Fucci Tiziano - 10524029 - 946638}
 \date{A.Y. 2020/2021}
@@ -97,36 +97,74 @@ The product we have chosen to simulate this advertising scenario is an energy dr
 
 	\chapter{Environment}		
 In this section we give a precise definition of the customer classes and their features, cost functions and distribution probabilities on which the model is based.
-		\section{Customer classes}
+
+		\section{Customers classes}
 In the environment model we have three customer classes: C1, C2 and C3.
 They represent customers with different needs, age and tastes and thus different interest in buying the product.
+
 			\subsection{Class 1: the sportsman}
 The first class is composed by people who play sports or train regularly. They are interested in buying the energy drink to improve their performance. 
 
 
-Their demand curve is: [inserire formula]
+Their conversion rate function is: 
+\[ \mathcal C_1(p) =  1.4 e^{-0.14p}\]
+\begin{figure}[H]
+\centering
+  \includegraphics[scale = 0.8, center]{C1}
+  \caption{Conversion rate function of Class 1.}
+\end{figure}
 
-and the probability to buy again the product after the first time is described by: [inserire formula e grafici]
-			\subsection{Class 2: the programmer}
+and the number of purchases following the first one is described by: 
+\[X \sim  \mathcal{P}oisson   (\lambda),\] where:
+\[\lambda = \frac{4.0}{\frac p 5 +0.5}  \]
+
+			\subsection{Class 2: the retired man}
+The average members of this class buy the product just to enjoy its taste.
+
+Their conversion rate function is: 
+\[ \mathcal C_2(p) = 0.1+ 6 e^{-0.6p}\]
+\begin{figure}[H]
+\centering
+  \includegraphics[scale = 0.8, center]{C2}
+  \caption{Conversion rate function of Class 2.}
+\end{figure}
+
+and the number of purchases following the first one is described by: 
+\[X \sim  \mathcal{P}oisson   (\lambda),\] where:
+\[\lambda = \frac{2.0}{\frac p 5 +0.5}  \]
+
+			\subsection{Class 3: the programmer}
 Programmers need to stay focused for a long time while at work, so they are interested in buying the product to work better and avoid introducing bugs in the code.
 
-Their demand curve is: [inserire formula]
 
-and the probability to buy again the product after the first time is described by: [inserire formula e grafici]
-			\subsection{Class 3: the retired man}
-The average member of this class buys the product just to enjoy its taste.
-His demand curve is: [inserire formula]
+Their conversion rate function is: \[   \mathcal C_3(p) = \left\{
+\begin{array}{ll}
+      0.8 e^{-0.5(p-5.5)^2} & 4.0\leq p< 6 \\
+      20 e^{-0.557p} & p \geq 6 \\
+\end{array} 
+\right. \]
+\begin{figure}[H]
+\centering
+  \includegraphics[scale = 0.8, center]{C3}
+  \caption{Conversion rate function of Class 3.}
+\end{figure}
 
-and the probability to buy again the product after the first time is described by: [inserire formula e grafici]
+
+and the number of purchases following the first one is described by: 
+\[X \sim  \mathcal{P}oisson   (\lambda),\] where:
+\[\lambda = \frac{3.0}{\frac p 5 +0.5}  \]
+
 
 		\section{Advertising}
+
 			\subsection{Auctions}
 In our model, we make the hypothesis of a GSP (Generalized Second Price) auction mechanism:
 	\[p_a= \frac{q_a}{q_{a+1}}v_{a+1} \left( \leq\frac{q_a}{q_a}v_a = v_a\right)\]
 However, since we are not required to model the other auctionists, we make the following simplification:
 	\[  p_a = v_a - |X|\] 
 where $ X\sim \mathcal{N}(\mu,\,\sigma^{2})$ having $\mu = \frac{v_a}{10} ,\,\sigma^{2} = 0.1$,
-that is assuming that we are generally paying for $\frac 9 {10}$ of our bid.
+that is assuming that we are generally paying for $\frac 9 {10}$ of our bid. The random variable $p_a$ represents the stochastic cost per click.
+
 			\subsection{Daily clicks of new users}
 The number of daily clicks of new users is a random variable drawn from a Gaussian distribution:
 \[ X\sim \mathcal{N}(\mu,\,\sigma^{2})\]
@@ -134,13 +172,34 @@ If the task requires to find the optimal bidding strategy, we model the influenc
 \[ X\sim \mathcal{N}(\mu_0+\mu_{bid},\,\sigma^{2})\]
 where $\mu_0$ is a fixed value and $\mu_{bid}$ is an increment which grows monotonically with the bid.
 
-			\subsection{Conversion rate function}
+			\subsection{Conversion rate functions}
+The conversion rate functions are defined for each class as the probability that the user of that class will buy the product at a given price. In particular, we have:
+\[ \mathcal C_1(p) =  1.4 e^{-0.14p}    \]
+\[ \mathcal C_2(p) = 0.1+ 6 e^{-0.6p}    \]
+\[   \mathcal C_3(p) = \left\{
+\begin{array}{ll}
+      0.8 e^{-0.5(p-5.5)^2} & 4.0\leq p< 6 \\
+      20 e^{-0.557p} & p \geq 6 \\
+\end{array} 
+\right. \]
+\[ \mathcal C_{agg}(p, b) =\frac{n_1(b)\mathcal C_1(p)+n_2(b)\mathcal C_2(p)+n_3(b)\mathcal C_3(p)}{n_1(b)+n_2(b)+n_3(b)}\] 
+where $n_i$ is the population of Class $i$ and the coefficients $n_i(b)$ are function of the bid.
+Since in our model $4.00 \leq p \leq 8.50$, $\mathcal C_i(p) \in [0,1]$ $ \forall i$.
+\begin{figure}[H]
+\centering
+  \includegraphics[scale = 0.8, center]{Cagg}
+  \caption{Conversion rate function of the aggregate Class, obtained for a fixed bid $b=2,50$\euro.}
+\end{figure}
+
+
 
 		\section{Re-buy process}
 We modeled the re-buy process as the orders the customer makes using a dash button, which comes for free together with the first bought item. We assume that the price of the additional purchases is the same of the first one.
-The number of purchases (following the first one) that a customer makes in one month is modeled as a random variable with a Poisson probability distribution:
-\[X \sim  \mathcal{P}oisson   (\lambda) \]
-where the parameter $\lambda$ is function of the price: $\lambda(p) = \frac{\alpha}{\beta(p-k)}$, with $\alpha, \beta$ and k normalizing constants. The following diagram shows the behaviour of $X$ as the price increases:
+The number of purchases (following the first one) that a customer of Class $i$ makes in one month is modeled as a random variable with a Poisson probability distribution:
+\[X_i \sim  \mathcal{P}oisson   (\lambda_i) \]
+where the parameter $\lambda_i$ is function of the price: $\lambda_i(p) = \frac{\alpha_i}{\beta_i(p+k_i)}$, with $\alpha_i, \beta_i$ and $k_i$ normalizing constants.
+For the aggregate model:
+\[\lambda_{agg}(p,b) =\frac{n_1(b)\lambda_1(p)+n_2(b) \lambda_2(p)+n_3(b) \lambda_3(p)}{n_1(b)+n_2(b)+n_3(b)} \] The following diagram shows the behaviour of $X_i$ as the price increases:
 \begin{figure}[H]
 \renewcommand*\thesubfigure{\roman{subfigure}} 
 \centering
@@ -168,10 +227,8 @@ where the parameter $\lambda$ is function of the price: $\lambda(p) = \frac{\alp
   \caption{p = 8.5\euro}
   \label{fig:sub4}
 \end{subfigure}
-	\caption{Poisson distributions generated by $\alpha=3$, $\beta=2$, $k=3.5$}
+	\caption{Poisson distributions for the three Classes and the aggregate Class, obtained for a fixed bid $b=2,50$\euro.}
 \end{figure}
-
-\noindent The parameter $\lambda$ has different values for each class of customers. 
 
 	%end of second chapter
 
