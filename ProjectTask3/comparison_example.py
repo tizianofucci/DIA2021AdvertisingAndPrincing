@@ -1,3 +1,7 @@
+import os, sys 
+currentdir = os.path.dirname(os.path.realpath(__file__)) 
+parentdir = os.path.dirname(currentdir) 
+sys.path.append(parentdir)
 from queue import Queue
 import numpy as np
 import pandas as pd
@@ -11,24 +15,54 @@ from GaussianTS_Learner import *
 from Greedy_Learner import *
 from UCB_Learner import *
 import math
+from math import e
 from scipy.stats import norm
+from UtilFunctions import *
+import UtilFunctions
+
 
 n_arms = 10
-p = np.array([0.85, 0.78, 0.71, 0.64, 0.57, 0.5, 0.43, 0.36, 0.1, 0.7])
-prices = np.array([4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5])
-
-bid = 1
-unitary_cost = 3
-T = 1000
-n_experiment = 100
+prod_cost = 3.0
+T = 365
+n_experiment = 15
 delay = 30
-mu_new_customer = 12
 sigma_new_customer = math.sqrt(4)
 
-opt = (p[1]*prices[1]*mu_new_customer * (3.0/(2*(prices[1] - 3.5))+1)) - (bid - bid/10) * mu_new_customer 
+bids = [0.9,1.1,1.3,1.5,1.7,1.9,2.1,2.3,2.5,2.7]
+bid_modifiers_c1 = [0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 0.9, 0.9, 1.4, 1.4]
+bid_modifiers_c2 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+bid_modifiers_c3 = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+
+bid_modifiers = [bid_modifiers_c1, bid_modifiers_c2, bid_modifiers_c3]
+bid_idx = 3
+
+
+bid = bids[bid_idx]
+
+class_deltas = []
+for j in bid_modifiers:
+    class_deltas.append(delta_customers(j[bid_idx]))
+
+class_mu_base = [10, 10, 10]
+class_mu = np.add(class_mu_base, class_deltas)
+mu_new_customer = np.sum(class_mu)
+
+
+prices = UtilFunctions.global_prices
+n_arms = 10
+class_probs = [[conv_c1(x) for x in prices],[conv_c2(x) for x in prices],[conv_c3(x) for x in prices]]
+p = np.average(class_probs, axis=0, weights = class_mu)
+
+coeffs = [4.0, 2.0, 3.0]
+avg_coeff = np.average(coeffs, weights = class_mu)  
+
+bid_offsets = [8.0, 5.0, 15.0]
+avg_bid_offset = np.average(bid_offsets, weights = class_mu)  
 
 def expected(arm):
-    return (p[arm]*(prices[arm]-3)*mu_new_customer * (3.0/(2*(prices[arm] - 3.5))+1)) - (bid - bid/10) * mu_new_customer 
+    price = prices[arm]
+    expected_returns = (avg_coeff/(2*((price)/10)+0.5))
+    return (p[arm]*(price - prod_cost) * mu_new_customer * (expected_returns + 1)) - (bid - bid/avg_bid_offset) * mu_new_customer 
 
 expected_rewards = [expected(x) for x in range(n_arms)]
 print("expected rewards:\n", expected_rewards)
@@ -36,41 +70,24 @@ print("expected rewards:\n", expected_rewards)
 opt_arm = np.argmax(expected_rewards)
 opt = expected_rewards[opt_arm]
 
-
-#mu = 0
-#variance = 1
-#sigma = math.sqrt(variance)
-#x = np.linspace(mu_new_customer - 3*sigma_new_customer, mu_new_customer + 3*sigma_new_customer, 100)
-#plt.plot(x, stats.norm.pdf(x, mu_new_customer, sigma_new_customer))
-#plt.show()
-
-
 ts_rewards_per_experiment = []
 ucb_rewards_per_experiment = []
-
-medie_di_medie = []
 
 pulled_arm_buffer_ts = Queue(maxsize=31)
 pulled_arm_buffer_ucb = Queue(maxsize=31)
 
 for e in range(0,n_experiment):
-    env = PricingEnvironment(n_arms,prices,p,mu_new_customer,sigma_new_customer,unitary_cost)
-#    ts_learner = TS_Learner(n_arms)
+    env = PricingEnvironment(n_arms,prices,prod_cost, p,mu_new_customer,sigma_new_customer, returns_coeff=avg_coeff, bid_offset=avg_bid_offset)
     gts_learner = GaussianTS_Learner(n_arms,delay)
     ucb_learner = UCB_Learner(n_arms,delay)
     pulled_arm_buffer_ts.queue.clear()
     pulled_arm_buffer_ucb.queue.clear()
 
     for t in range (0,T):
-#        pulled_arm_buffer_ts.put(ts_learner.pull_arm())
         pulled_arm_buffer_ts.put(gts_learner.pull_arm())
         pulled_arm_buffer_ucb.put(ucb_learner.pull_arm())
 
         if t>=delay:
-#            after_30_days_arm_ts = pulled_arm_buffer_ts.get()
-#            rewards = env.round(after_30_days_arm_ts)
-#            ts_learner.update(after_30_days_arm_ts,rewards)
-
             after_30_days_arm_ts = pulled_arm_buffer_ts.get()
             rewards = env.round(after_30_days_arm_ts,bid)
             gts_learner.update(after_30_days_arm_ts,rewards)
@@ -81,11 +98,9 @@ for e in range(0,n_experiment):
     ts_rewards_per_experiment.append(gts_learner.collected_rewards)
     ucb_rewards_per_experiment.append(ucb_learner.collected_rewards)
     
-    medie_di_medie = np.append(medie_di_medie,np.mean(env.total_returns_per_arm[0]))
     print(e)
 
 
-print(np.mean(medie_di_medie))
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
@@ -100,20 +115,9 @@ ax = sns.barplot(x=np.array(list("ABCDEFGHIJ")),y=ucb_learner.means,color='b')
 
 plt.show()
 
-
-
-x=np.arange(-100,600,0.01)
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[0], 1/gts_learner.precision_of_rewards[0]), label='0')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[1], 1/gts_learner.precision_of_rewards[1]), label='1')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[2], 1/gts_learner.precision_of_rewards[2]), label='2')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[3], 1/gts_learner.precision_of_rewards[3]), label='3')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[4], 1/gts_learner.precision_of_rewards[4]), label='4')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[5], 1/gts_learner.precision_of_rewards[5]), label='5')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[6], 1/gts_learner.precision_of_rewards[6]), label='6')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[7], 1/gts_learner.precision_of_rewards[7]), label='7')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[8], 1/gts_learner.precision_of_rewards[8]), label='8')
-plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[9], 1/gts_learner.precision_of_rewards[9]), label='9')
-
+x=np.arange(100,1700,0.01)
+for i in range(n_arms):
+    plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[i], 1/gts_learner.precision_of_rewards[i]), label=str(i))
 
 plt.legend()
 plt.show()
