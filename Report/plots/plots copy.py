@@ -42,13 +42,8 @@ bid_modifiers_c3 = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 bid_modifiers = [bid_modifiers_c1, bid_modifiers_c2, bid_modifiers_c3]
 
 bid_modifiers_aggr = np.zeros(len(bids))
-
-
-
-bid_modifiers_aggr = np.mean(bid_modifiers, axis=0)
-
+bid_modifiers_aggr = np.sum(bid_modifiers, axis=0)
 print(bid_modifiers_aggr)
-
 def delta(modifier): return 200*(modifier*2)
 deltas = []
 for j in bid_modifiers:
@@ -58,7 +53,7 @@ print(deltas)
 plt.plot(bids, [delta(i) for i in bid_modifiers_c1], 'r')
 plt.plot(bids, [delta(i) for i in bid_modifiers_c2], 'g')
 plt.plot(bids, [delta(i) for i in bid_modifiers_c3], 'b')
-#plt.plot(bids, [delta(i) for i in bid_modifiers_aggr], 'purple')
+plt.plot(bids, [delta(i) for i in bid_modifiers_aggr], 'purple')
 plt.plot(bids, np.sum(deltas, axis=0))
 plt.xlabel('Bids')
 plt.ylabel('Clicks')

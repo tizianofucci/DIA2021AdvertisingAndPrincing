@@ -5,7 +5,7 @@ import numpy as np
 # reward = ((sells + total_returns) * self.prices[pulled_arm]) - costs
 class BiddingEnvironment():
     
-    def __init__(self, n_arms, price, prod_cost, bids, bid_modifiers, conv_rate, mu_new, sigma_new):
+    def __init__(self, n_arms, price, prod_cost, bids, bid_modifiers, conv_rate, mu_new, sigma_new, returns_coeffs, bid_offsets):
         #super().__init__(n_arms, probabilities)
         self.price = price
         self.prod_cost = prod_cost
@@ -15,6 +15,8 @@ class BiddingEnvironment():
         self.mu_new = mu_new
         self.sigma_new = sigma_new
         self.total_returns_per_arm = [[] for _ in range(n_arms)]
+        self.returns_coeffs = returns_coeffs
+        self.bid_offsets = bid_offsets
         #self.results = ""
 
     def round(self,pulled_arm):
@@ -26,14 +28,14 @@ class BiddingEnvironment():
         for i in range (0, new_customers):
             customer = Customer(self.conv_rate)
             single_rewards[i] = customer.round_costumer()
-            single_cost_per_click[i] = self.bids[pulled_arm] - abs(np.random.normal(self.bids[pulled_arm], 0.1))/10
+            single_cost_per_click[i] = self.bids[pulled_arm] - abs(np.random.normal(self.bids[pulled_arm], 0.1))/self.bid_offsets[pulled_arm]
 
         sells = np.sum(single_rewards)
         n_returns = np.zeros(int(sells))
 
         for i in range(0,int(sells)):
             #n_returns[i] = max(0, (round(np.random.normal(15 - 2*self.price,1))))
-            n_returns[i] = np.random.poisson(3.0/(2*(self.price - 3.5)))
+            n_returns[i] = np.random.poisson((self.returns_coeffs[pulled_arm]/(2*((self.price)/10)+0.5)))
             #n_returns[i] = 15-2*self.price
 
         costs = np.sum(single_cost_per_click)

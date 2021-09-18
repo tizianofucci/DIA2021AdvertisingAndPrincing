@@ -41,15 +41,15 @@ bid = bids[bid_idx]
 
 class_deltas = []
 for j in bid_modifiers:
-    class_deltas.append(delta_customers(j[bid_idx]))
+    class_deltas.append(compute_delta_customers(j[bid_idx]))
 
 class_mu_base = [10, 10, 10]
 class_mu = np.add(class_mu_base, class_deltas)
 mu_new_customer = np.sum(class_mu)
 
+n_arms = 10
 
 prices = UtilFunctions.global_prices
-n_arms = 10
 class_probs = [[conv_c1(x) for x in prices],[conv_c2(x) for x in prices],[conv_c3(x) for x in prices]]
 p = np.average(class_probs, axis=0, weights = class_mu)
 
