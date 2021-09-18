@@ -37,21 +37,22 @@ contexts_prob = np.array([  np.array([np.array([conv_c1(x) for x in prices]),
                             np.array([np.array([conv_c2(x) for x in prices]),
                             np.array([conv_c3(x) for x in prices])])])
 
-
-
-
 features_matrix = [[0,0],
                    [0,1],
                    [1,0],
                    [1,1]]
 features_column_to_class = [0,0,1,2]
 
-bid = 1.7
+#1.7
+bid = 2.5
 T = 365
 n_experiment = 10
 delay = 30
-contexts_mu = np.array([ np.array([100,100]) ,
-                         np.array([75,50])])
+contexts_mu_base = np.array([ np.array([10,10]) ,
+                                np.array([10,10])])
+
+#todo fix this
+contexts_mu = contexts_mu_base
 
 contexts_sigma = np.array([ np.array([math.sqrt(1),math.sqrt(1)]) ,
                          np.array([math.sqrt(1),math.sqrt(1)])])

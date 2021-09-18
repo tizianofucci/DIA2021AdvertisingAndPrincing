@@ -17,13 +17,12 @@ from GaussianTS_Learner import *
 n_arms = 10
 
 prod_cost = 3.0
-conv_rate = 0.4 #prob of buying after click, known
 
 T = 365
 n_experiment = 50
 delay = 30
 
-bids = 1.8*np.array(UtilFunctions.global_bids)
+bids = np.array(UtilFunctions.global_bids)
 
 bid_modifiers_c1 = [0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 0.9, 0.9, 1.4, 1.4]
 bid_modifiers_c2 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
@@ -40,8 +39,8 @@ sigma_new_customer = math.sqrt(1)
 
 
 prices = UtilFunctions.global_prices
-class_probs = [[conv_c1(x) for x in prices],[conv_c2(x) for x in prices],[conv_c3(x) for x in prices]]
-price_idx = 6
+class_probs = np.array([[conv_c1(x) for x in prices],[conv_c2(x) for x in prices],[conv_c3(x) for x in prices]])
+price_idx = 4
 price = prices[price_idx]
 
 deltas = np.array([])
@@ -62,17 +61,25 @@ avg_bid_offsets = []
 for i in range(len(bids)):
     avg_bid_offsets.append(np.average(bid_offsets, weights = deltas[:,i])) 
 
+conv_rates = []
+for i in range(len(bids)):
+    conv_rates.append(np.average(np.array(class_probs[:,price_idx]), weights = deltas[:,i]))
+
 def expected(arm):
     bid = bids[arm]
     expected_returns = (avg_coeffs[arm]/(2*((price)/10)+0.5))
     delta_customers = compute_delta_customers(bid_modifiers_aggr[arm])
-    return (conv_rate*(mu_new_customer + delta_customers)*(price - prod_cost)*(expected_returns + 1)) - (bid - bid/avg_bid_offsets[arm]) * (mu_new_customer + delta_customers)
+    n_visits = mu_new_customer*3 + delta_customers
+    conv_rate = conv_rates[arm]
+    return (conv_rate*n_visits*(price - prod_cost)*(expected_returns + 1)) - (bid - bid/avg_bid_offsets[arm]) * n_visits
 
 expected_rewards = [expected(x) for x in range(n_arms)]
 print("expected rewards:\n", expected_rewards)
 
 opt_arm = argmax(expected_rewards)
 opt = expected_rewards[opt_arm]
+
+print("optimal reward: {}; with arm {}".format(opt, opt_arm))
 
 
 ts_rewards_per_experiment = []
@@ -87,7 +94,7 @@ pulled_arm_buffer_ucb = Queue(maxsize=31)
 opt_count = 0
 
 for e in range(0,n_experiment):
-    env = BiddingEnvironment(n_arms, price, prod_cost, bids, bid_modifiers_aggr, conv_rate, mu_new_customer, sigma_new_customer,avg_coeffs,avg_bid_offsets)
+    env = BiddingEnvironment(n_arms, price, prod_cost, bids, bid_modifiers_aggr, conv_rates, mu_new_customer*3, sigma_new_customer,avg_coeffs,avg_bid_offsets)
     gts_learner = GaussianTS_Learner(n_arms,delay)
 
     pulled_arm_buffer_ts.queue.clear()

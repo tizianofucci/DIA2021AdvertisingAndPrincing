@@ -26,7 +26,7 @@ prod_cost = 3.0
 T = 365
 n_experiment = 15
 delay = 30
-sigma_new_customer = math.sqrt(4)
+sigma_new_customer = math.sqrt(1)
 
 bids = [0.9,1.1,1.3,1.5,1.7,1.9,2.1,2.3,2.5,2.7]
 bid_modifiers_c1 = [0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 0.9, 0.9, 1.4, 1.4]
@@ -34,7 +34,7 @@ bid_modifiers_c2 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 bid_modifiers_c3 = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
 
 bid_modifiers = [bid_modifiers_c1, bid_modifiers_c2, bid_modifiers_c3]
-bid_idx = 3
+bid_idx = 8
 
 
 bid = bids[bid_idx]
@@ -45,6 +45,7 @@ for j in bid_modifiers:
 
 class_mu_base = [10, 10, 10]
 class_mu = np.add(class_mu_base, class_deltas)
+print(class_mu)
 mu_new_customer = np.sum(class_mu)
 
 n_arms = 10
@@ -61,14 +62,14 @@ avg_bid_offset = np.average(bid_offsets, weights = class_mu)
 
 def expected(arm):
     price = prices[arm]
-    expected_returns = (avg_coeff/(2*((price)/10)+0.5))
-    return (p[arm]*(price - prod_cost) * mu_new_customer * (expected_returns + 1)) - (bid - bid/avg_bid_offset) * mu_new_customer 
-
+    expected_returns = (avg_coeff/(2*((price)/10)+0.5))  
+    return (p[arm]*(price - prod_cost) * mu_new_customer * (expected_returns + 1)) - (bid - bid/avg_bid_offset) * mu_new_customer
 expected_rewards = [expected(x) for x in range(n_arms)]
 print("expected rewards:\n", expected_rewards)
 
 opt_arm = np.argmax(expected_rewards)
 opt = expected_rewards[opt_arm]
+print("optimal reward: {}; with arm {}".format(opt, opt_arm))
 
 ts_rewards_per_experiment = []
 ucb_rewards_per_experiment = []

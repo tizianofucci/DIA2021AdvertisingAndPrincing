@@ -98,7 +98,14 @@ for e in range(0,n_experiment):
     pulled_arm_buffer_ts.queue.clear()
 
     for t in range (0,T):
-        pulled_arm_buffer_ts.put(context_gpts_learner.pull_arm())
+
+
+        try:
+            pulled_arm_buffer_ts.put(context_gpts_learner.pull_arm())
+        
+        except Exception as err:
+             print("Expected negative revenue on all arms")
+             break
 
         if t>=delay:
             after_30_days_arm_ts = pulled_arm_buffer_ts.get()

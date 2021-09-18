@@ -9,7 +9,7 @@ class GaussianTS_Learner(Learner):
 
         self.τ_0 = 0.0001  # the posterior precision
         self.μ_0 = 1       # the posterior mean
-        self.τ = 0.001 #0.004
+        self.τ = 0.004 #0.004
         self.means_of_rewards = [1 for _ in range(self.n_arms)]
         self.precision_of_rewards = [self.τ_0 for _ in range(self.n_arms)]
         self.delay = delay
