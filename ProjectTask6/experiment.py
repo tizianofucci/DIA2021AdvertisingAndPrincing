@@ -83,6 +83,16 @@ opt = expected_rewards[opt_arm]
 opt_tuple = np.unravel_index(opt_arm,(len(bids),len(prices)))
 print("optimal reward: {}; with arm {}".format(opt, opt_tuple))
 
+expected_rewards = np.array([expected(x,y) for x in range(len(bids)) for y in range(len(prices))])
+print(expected_rewards.reshape(10,10))
+X, Y =  np.meshgrid(prices,bids)
+Z = expected_rewards.reshape(len(bids),len(prices))
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
+    linewidth=0, antialiased=False)
+fig.colorbar(surf, shrink=0.5, aspect=5)
+plt.show()
+
 ts_rewards_per_experiment = []
 ucb_rewards_per_experiment = []
 
