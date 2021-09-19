@@ -19,7 +19,7 @@ n_arms = 10
 prod_cost = 3.0
 
 T = 365
-n_experiment = 50
+n_experiment = 100
 delay = 30
 
 bids = np.array(UtilFunctions.global_bids)
@@ -132,16 +132,16 @@ print("optimal arm found {} times out of {}".format(opt_count ,n_experiment))
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
-plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r')
+plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r', linewidth = 3)
 plt.legend(["TS"])
 plt.show()
 gts_means_of_rewards = np.transpose(gts_means_of_rewards)
 gts_precision_of_rewards = np.transpose(gts_precision_of_rewards)
 
 
-x=np.arange(100,2500,0.01)
+x=np.arange(100,750,0.01)
 for i in range(n_arms):
-    plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[i], 1/gts_learner.precision_of_rewards[i]), label=str(i))
+    plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[i], 1/gts_learner.precision_of_rewards[i]), label=str(i), linewidth = 2)
 
 #for i in range(len(gts_learner.means_of_rewards)):
     #print("mean: {}, cdf in 0: {}".format(gts_learner.means_of_rewards[i],norm.cdf(0, gts_learner.means_of_rewards[i], 1/gts_learner.precision_of_rewards[i])))
@@ -158,10 +158,10 @@ plt.show()
 #plt.legend()
 #plt.show()
 
-x=np.arange(-100,2500,0.01)
+x=np.arange(-100,750,0.01)
 for i in range(n_arms):
     variance = (np.mean((1/gts_precision_of_rewards[i])**2)) + np.mean(gts_means_of_rewards[i]**2 - (np.mean(gts_means_of_rewards[i]))**2)
-    plt.plot(x, norm.pdf(x, np.mean(gts_means_of_rewards[i]), math.sqrt(variance)), label="{}".format(i))
+    plt.plot(x, norm.pdf(x, np.mean(gts_means_of_rewards[i]), math.sqrt(variance)), label="{}".format(i), linewidth = 2)
 
 
 #for i in range(len(gts_learner.means_of_rewards)):

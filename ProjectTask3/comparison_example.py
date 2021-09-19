@@ -20,7 +20,7 @@ import UtilFunctions
 n_arms = 10
 prod_cost = 3.0
 T = 365
-n_experiment = 15
+n_experiment = 100
 delay = 30
 sigma_new_customer = math.sqrt(1)
 
@@ -100,20 +100,22 @@ for e in range(0,n_experiment):
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
-plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r')
-plt.plot(np.cumsum(np.mean(opt - ucb_rewards_per_experiment, axis=0)), 'g')
+plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r', linewidth=4)
+plt.plot(np.cumsum(np.mean(opt - ucb_rewards_per_experiment, axis=0)), 'g', linewidth=4)
 plt.legend(["TS","UCB"])
 plt.show()
 
 ax = plt.subplots()
-ax = sns.barplot(x=np.array(list("ABCDEFGHIJ")),y=ucb_learner.upper_bounds,color='r')
-ax = sns.barplot(x=np.array(list("ABCDEFGHIJ")),y=ucb_learner.means,color='b')
+ax = sns.barplot(x=np.array(UtilFunctions.global_bids),y=ucb_learner.upper_bounds,color='r')
+ax = sns.barplot(x=np.array(UtilFunctions.global_bids),y=ucb_learner.means,color='b')
 
 plt.show()
 
 x=np.arange(100,(opt*1.2),0.01)
 for i in range(n_arms):
-    plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[i], 1/gts_learner.precision_of_rewards[i]), label=str(i))
+    plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[i], 1/gts_learner.precision_of_rewards[i]), label=str(i), linewidth=3)
 
 plt.legend()
+plt.xlabel("X")
+plt.ylabel("P(X)")
 plt.show()

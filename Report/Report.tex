@@ -241,34 +241,72 @@ For the aggregate model:
 		\section{Step 1}
 			\subsection{Task}
 \textit{Formulate the objective function when assuming that, once a user makes a purchase with a price p, then the ecommerce will propose the same price p to future visits of the same user and this user will surely buy the item. The revenue function must take into account the cost per click, while there is no budget constraint. Provide an algorithm to find the best joint bidding/pricing strategy and describe its complexity in the number of values of the bids and prices available (assume here that the values of the parameters are known). In the following steps, assume that the number of bid values are 10 as well as the number of price values.}
-			\subsection{Implementation}
+			\subsection{Solution}
 
 		\section{Step 2}
 			\subsection{Task}
 \textit{Consider the online learning version of the above optimization problem when the parameters are not known. Identify the random variables, potential delays in the feedback, and choose a model for each of them when a round corresponds to a single day. Consider a time horizon of one year.}
-			\subsection{Implementation}
+			\subsection{Solution}
 
 		\section{Step 3}
 			\subsection{Task}
 \textit{Consider the case in which the bid is fixed and learn in online fashion the best pricing strategy when the algorithm does not discriminate among the customers’ classes (and therefore the algorithm works with aggregate data). Assume that the number of daily clicks and the daily cost per click are known. Adopt both an upper-confidence bound approach and a Thompson-sampling approach and compare their performance.}
-			\subsection{Implementation}
+			\subsection{Results}
+
+\begin{figure}[H]
+\centering
+  \includegraphics[scale = 0.8, center]{3r}
+  \caption{Regret plots of both TS and UCB algorithms.}
+\end{figure}
+\begin{figure}[H]
+\centering
+  \includegraphics[scale = 0.8, center]{3ucb}
+  \caption{Estimated rewards for each arm and relative upper bounds.}
+\end{figure}
+\begin{figure}[H]
+\centering
+  \includegraphics[scale = 0.8, center]{3arms}
+  \caption{Posterior distribution over the arms reward obtained by TS.}
+\end{figure}
 
 		\section{Step 4}
 			\subsection{Task}
 \textit{Do the same as step 3 when instead a context-generation approach is adopted to identify the classes of customers and adopt a potentially different pricing strategy per class. In doing that, evaluate the performance of the pricing strategies in the different classes only at the optimal solution (e.g., if prices that are not optimal for two customers’ classes provide different performance, you do not split the contexts). Let us remark that no discrimination of the customers’ classes is performed at the advertising level. From this step on, choose one approach between the upper-confidence bound one and the Thompson-sampling one.}
-			\subsection{Implementation}
+			\subsection{Results}
 		\section{Step 5}
 			\subsection{Task}
 \textit{Consider the case in which the prices are fixed and learn in online fashion the best bidding strategy when the algorithm does not discriminate among the customers’ classes. Assume that the conversion probability is known. However, we need to guarantee some form of safety to avoid the play of arms that provide a negative revenue with a given probability. This can be done by estimating the probability distribution over the revenue for every arm and making an arm eligible only when the probability to have a negative revenue is not larger than a threshold (e.g., 20\%). Apply this safety constraint after 10 days to avoid that the feasible set of arms is empty, while in the first 10 days choose the arm to pull with uniform probability. Do not discriminate over the customers’ classes.}
-			\subsection{Implementation}
+			\subsection{Results}
+
+\begin{figure}[H]
+\centering
+  \includegraphics[scale = 0.8, center]{5r}
+  \caption{Regret plots of the Thompson Sampling algorithm.}
+\end{figure}
+\begin{figure}[H]
+\centering
+  \includegraphics[scale = 0.8, center]{5arms}
+  \caption{Posterior distribution over the arms rewards obtained by TS.}
+\end{figure}
 		\section{Step 6}
 			\subsection{Task}
 \textit{Consider the general case in which one needs to learn the joint pricing and bidding strategy under the safety constraint introduced in step 5. Do not discriminate over the customers’ classes both for advertising and pricing.}
-			\subsection{Implementation}
+			\subsection{Results}
+
+\begin{figure}[H]
+\centering
+  \includegraphics[scale = 0.8, center]{6r}
+  \caption{Regret plot of the GPTS algorithm.}
+\end{figure}
+\begin{figure}[H]
+\centering
+  \includegraphics[scale = 0.8, center]{6arms}
+  \caption{Posterior distribution over the arms rewards obtained by GPTS.}
+\end{figure}
 		\section{Step 7}
 			\subsection{Task}
 \textit{Do the same as step 6 when instead discriminating over the customers’ classes for pricing. In doing that, adopt the context structure already discovered in step 4.}
-			\subsection{Implementation}
+			\subsection{Results}
 	%end of third chapter
 
 	\chapter{Algorithms and other details}
@@ -310,7 +348,7 @@ where:
 	\item $\tau_{0,a}$ is the precision of the output model.
 \end{itemize}		
 
-\section{Gaussian Processes Regression}
+\section{Gaussian Process Thompson Sampling}
 
 
 
