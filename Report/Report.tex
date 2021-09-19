@@ -14,6 +14,11 @@
 \usepackage{lipsum}
 \usepackage{caption}
 \usepackage{eurosym}
+\usepackage{amssymb}
+
+% To define custom operators
+\usepackage{amsmath}
+\DeclareMathOperator*{\argmax}{argmax} 
 
 % To use monospaced font
 \usepackage{courier}
@@ -166,11 +171,11 @@ where $ X\sim \mathcal{N}(\mu,\,\sigma^{2})$ having $\mu = \frac{v_a}{10} ,\,\si
 that is assuming that we are generally paying for $\frac 9 {10}$ of our bid. The random variable $p_a$ represents the stochastic cost per click.
 
 			\subsection{Daily clicks of new users}
-The number of daily clicks of new users is a random variable drawn from a Gaussian distribution:
-\[ X\sim \mathcal{N}(\mu,\,\sigma^{2})\]
+The number of daily clicks of new users of class $\mathcal C_i$ is a random variable drawn from a Gaussian distribution:
+\[ X_i\sim \mathcal{N}(\mu_i,\,\sigma^{2})\]
 If the task requires to find the optimal bidding strategy, we model the influence of the bid on the number of daily clicks:
-\[ X\sim \mathcal{N}(\mu_0+\mu_{bid},\,\sigma^{2})\]
-where $\mu_0$ is a fixed value and $\mu_{bid}$ is an increment which grows monotonically with the bid.
+\[ X_i \sim \mathcal{N}(\mu_{0,i}+\mu_{bid,i},\,\sigma^{2})\]
+where $\mu_{0,i}$ is a fixed value and $\mu_{bid,i}$ is an increment which grows monotonically with the bid.
 
 			\subsection{Conversion rate functions}
 The conversion rate functions are defined for each class as the probability that the user of that class will buy the product at a given price. In particular, we have:
@@ -227,7 +232,7 @@ For the aggregate model:
   \caption{p = 8.5\euro}
   \label{fig:sub4}
 \end{subfigure}
-	\caption{Poisson distributions for the three Classes and the aggregate Class, obtained for a fixed bid $b=2,50$\euro.}
+	\caption{Poisson distributions for the three Classes and the aggregate Class, obtained for different prices and a fixed bid $b=2,50$\euro.}
 \end{figure}
 
 	%end of second chapter
@@ -265,11 +270,57 @@ For the aggregate model:
 \textit{Do the same as step 6 when instead discriminating over the customers’ classes for pricing. In doing that, adopt the context structure already discovered in step 4.}
 			\subsection{Implementation}
 	%end of third chapter
+
+	\chapter{Algorithms and other details}
+		\section{UCB}
+Step 3 requires to adopt an upper-confidence bound approach. The algorithm we use is a slightly modified version of the UCB1 algorithm working on $|A|=10$ arms:
+\begin{enumerate}[i)]
+	\item play the arm $a=t$  $\%$  $|A|$ for the first $|A|+30$ timesteps;
+	\item at timestep $t$ play arm $a_t$ such that:
+		$$a_t \leftarrow \argmax_{a \in A} \left\{\bar x + 150 \sqrt{\frac{2 \log(t+1)}{n_a(t-1)}}\right\} $$
+TODO: CHECK THIS
+\end{enumerate}
+where $n_a(t-1)$ is the number of times arm $a$ has been pulled before timestep $t$. The factor 150 is a normalizing constant, since the original expression of the UCB1 algorithm bound comes from the Hoeffding bound, which is made to estimate the expected value of a random variable with support in [0,1]. Since the rewards have much larger values, we need to adjust the respective upper bound on their expected value.
+
+The regret of the UCB algorithm is: \\TODO: INSERT EXPRESSION
+
+
+		\section{Thompson Sampling}
+For steps 3, 4 and 5 we follow the Thompson approach.
+Our implementation of the Thompson Sampling algorithm takes into account the Gaussian nature of the reward per each arm, since the number of new customers is a Gaussian random variable, given the bid and the price. For this reason, the prior distribution is still Gaussian. 
+Except for the prior updates, the procedure is similar to the one used for Bernoulli variables:
+\\TODO: CHECK CORRECTNESS
+\begin{enumerate}[i)]
+	\item model the prior distributions: $$\mathbb{P}(\mu_a = \theta_a) = \mathcal{N}(\theta_a, \sigma^2_a)$$
+	\item initialize the posterior distributions: $$\mathbb{P}(X|\mu_{0,a}, \tau_{0,a}) = \mathcal{N}(X|\mu_{0,a}, \tau_{0,a}) $$
+	\item at every time $t$, for every arm $a$:
+\[ \tilde \theta_a \leftarrow Sample\left(\mathbb{P}(\mu_a = \theta_a)\right)\]
+	\item at every time $t$ play arm $a_t$ such that:
+		$$a_t \leftarrow \argmax_{a \in A} \{\tilde \theta_a\} $$
+	\item update the Gaussian distribution of arm $a_t$ as:
+		$$\tau_{0,a} \leftarrow \tau_{0,a} + n_a(t-1)\tau_a $$
+		$$\mu_{0,a} \leftarrow \frac{\tau_{0,a}\mu_{0,a} + \tau_a \sum_{i=1}^{n}{x_i}}{\tau_{0,a} + n_a(t)\tau_a} $$
+\end{enumerate}
+where:
+\begin{itemize}
+	\item $\tau_a = 1/\sigma^2_a$ is the precision of the prior distribution;
+	\item $n_a$ is the number of times the arm has been pulled;
+	\item $x_i$ is the reward received at each round the arm was pulled;
+	\item $\mu_{0,a}$ is the estimated mean of arm $a$;
+	\item $\tau_{0,a}$ is the precision of the output model.
+\end{itemize}		
+
+\section{Gaussian Processes Regression}
+
+
+
+	%end of fourth chapter
 	\chapter{References}
 		\section{Links}
 
 \begin{itemize}
 	\item GitHub repository of the project: \url{https://github.com/tizianofucci/DIA2021AdvertisingAndPrincing}
+	\item Application of Gaussian Thompson Sampling: \url{https://towardsdatascience.com/thompson-sampling-fc28817eacb8}
 \end{itemize}
 
 \end{document}
