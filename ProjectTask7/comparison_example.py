@@ -20,10 +20,10 @@ from UtilFunctions import *
 import UtilFunctions
 
 prices = np.array(UtilFunctions.global_prices)
-bids = UtilFunctions.global_bids
+bids = np.array(UtilFunctions.global_bids)
 prod_cost = 3.0
 n_arms = 10
-T = 220
+T = 150
 n_experiment = 1
 delay = 30
 
@@ -60,12 +60,20 @@ delta_customers_multipliers = np.array([ np.array([0.5,0.5]) ,
                                         np.array([1.0,1.0])])
 
 def expected(arm_bids,arm_price,feature_a,feature_b):
+    delta_customers = int(50*(bid_modifiers[feature_a][feature_b][arm_bids]*2)*(delta_customers_multipliers[feature_a][feature_b]))
     bid = bids[arm_bids]
     price = prices[arm_price]
-    n_returns = (contexts_n_returns_coeffs[feature_a][feature_b]/(2*(price/10)+0.5))
     bid_offset = contexts_bid_offsets[feature_a][feature_b]
-    delta_customers = 50*(bid_modifiers[feature_a][feature_b][arm_bids]*2)*(delta_customers_multipliers[feature_a][feature_b])
-    return (contexts_prob[feature_a][feature_b][arm_price]*(price - prod_cost)*(contexts_mu[feature_a][feature_b] +delta_customers) * (n_returns + 1)) - (bid - bid/bid_offset) * (contexts_mu[feature_a][feature_b] + delta_customers)
+    total_clicks = (contexts_mu[feature_a][feature_b] + delta_customers)
+    expected_sales = int(contexts_prob[feature_a][feature_b][arm_price]*total_clicks)
+    n_returns = (contexts_n_returns_coeffs[feature_a][feature_b]/(2*(price/10)+0.5))
+
+    total_sales = int(expected_sales * (n_returns + 1))
+
+    expected = total_sales * (price - prod_cost) - (bid - bid/bid_offset) * (total_clicks)
+
+    #return (contexts_prob[feature_a][feature_b][arm_price]*(price - prod_cost)*(contexts_mu[feature_a][feature_b] +delta_customers) * (n_returns + 1)) - (bid - bid/bid_offset) * (contexts_mu[feature_a][feature_b] + delta_customers)
+    return expected
 
 opt_arms = []
 opt_rewards = []
@@ -77,7 +85,31 @@ for i in range(2):
         opt_arms.append(np.unravel_index(opt_arm,(10,10)))
 opt = np.sum(opt_rewards)
 
+print([expected(x,y,0,1) for x in range(len(bids)) for y in range(len(prices))])
+
 print("optimal rewards:{}, sum:{}, with arms:{}".format(opt_rewards,opt, opt_arms))
+
+expected_rewards = np.array([expected(x,y,0,0) for x in range(len(bids)) for y in range(len(prices))])
+expected_rewards2 = np.array([expected(x,y,0,1) for x in range(len(bids)) for y in range(len(prices))])
+print(expected_rewards.reshape(10,10))
+X, Y =  np.meshgrid(prices,bids)
+Z = expected_rewards.reshape(len(bids),len(prices))
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
+    linewidth=0, antialiased=False)
+fig.colorbar(surf, shrink=0.5, aspect=5)
+
+
+plt.show()
+Z = expected_rewards2.reshape(len(bids),len(prices))
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
+    linewidth=0, antialiased=False)
+fig.colorbar(surf, shrink=0.5, aspect=5)
+
+
+plt.show()
+
 
 ts_rewards_per_experiment = []
 
@@ -106,7 +138,9 @@ for e in range(0,n_experiment):
                 context_gpts_learner.try_splitting()
         if t%20 ==0:
             print(t)
-    ts_rewards_per_experiment.append(context_gpts_learner.collected_rewards)    
+                
+    ts_rewards_per_experiment.append(context_gpts_learner.collected_rewards)
+    
     print(e)
 
 plt.figure(0)
@@ -122,7 +156,39 @@ for i in range(len(context_gpts_learner.learners)):
     Z = context_gpts_learner.learners[i].means.reshape(len(bids),len(prices))
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
     surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
-        linewidth=0, antialiased=False)
+    linewidth=0, antialiased=False)
     fig.colorbar(surf, shrink=0.5, aspect=5)
 
 plt.show()
+
+pulled_arms = np.array(context_gpts_learner.learners[5].pulled_arms).T
+pulled_arms = np.reshape(context_gpts_learner.learners[5].pulled_arms, (-1,2))
+pulled_bids = pulled_arms[:,0]
+unique, counts = np.unique(pulled_bids, return_counts=True)
+print(dict(zip(unique, counts)))
+pulled_prices = pulled_arms[:,1]
+unique, counts = np.unique(pulled_prices, return_counts=True)
+print(dict(zip(unique, counts)))
+#print(pulled_arms)
+#print(pulled_bids)
+#print(pulled_prices)
+
+print(context_gpts_learner.learners[5].means.reshape(len(bids),len(prices)))
+print(context_gpts_learner.learners[5].means.reshape(len(bids),len(prices)))
+
+
+pulled_arms = np.array(context_gpts_learner.learners[6].pulled_arms).T
+pulled_arms = np.reshape(context_gpts_learner.learners[6].pulled_arms, (-1,2))
+pulled_bids = pulled_arms[:,0]
+unique, counts = np.unique(pulled_bids, return_counts=True)
+print(dict(zip(unique, counts)))
+pulled_prices = pulled_arms[:,1]
+unique, counts = np.unique(pulled_prices, return_counts=True)
+print(dict(zip(unique, counts)))
+#print(pulled_arms)
+#print(pulled_bids)
+#print(pulled_prices)
+
+#print(context_gpts_learner.learners[6].means.reshape(len(bids),len(prices)))
+#print(context_gpts_learner.learners[6].means.reshape(len(bids),len(prices)))
+
