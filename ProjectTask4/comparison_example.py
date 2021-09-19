@@ -1,3 +1,7 @@
+import os, sys 
+currentdir = os.path.dirname(os.path.realpath(__file__)) 
+parentdir = os.path.dirname(currentdir) 
+sys.path.append(parentdir)
 from ContextEnvironment import ContextEnvironment
 from queue import Queue
 import numpy as np
@@ -13,25 +17,25 @@ from ContextGaussianTS_Learner import *
 import math
 from math import e
 from scipy.stats import norm
+from UtilFunctions import *
+import UtilFunctions
 
-def conv_c1(x):
-    
-    return 1.4* e** (-0.14*x)
-
-def conv_c2(x):
-    return 0.1 + 6* e** (-0.6*x)
-    
-def conv_c3(x):
-    if x < 6.0:
-        return 0.8*e**(-0.5*((x-5.5)**2))
-    else:
-        return 20 * (e**(-0.557*x))
-
-
-prices = np.array([4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5])
+prices = np.array(UtilFunctions.global_prices)
+bids = UtilFunctions.global_bids
 prod_cost = 3.0
-
 n_arms = 10
+bid_idx = 8
+bid = bids[bid_idx] #=2.5
+T = 365
+n_experiment = 10
+delay = 30
+
+bid_modifiers_c1 = [0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 0.9, 0.9, 1.4, 1.4]
+bid_modifiers_c2 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+bid_modifiers_c3 = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+bid_modifiers = [bid_modifiers_c1, bid_modifiers_c2, bid_modifiers_c3]
+
+
 contexts_prob = np.array([  np.array([np.array([conv_c1(x) for x in prices]),
                             np.array([conv_c1(x) for x in prices])]),
                             np.array([np.array([conv_c2(x) for x in prices]),
@@ -41,24 +45,29 @@ features_matrix = [[0,0],
                    [0,1],
                    [1,0],
                    [1,1]]
+
 features_column_to_class = [0,0,1,2]
 
-#1.7
-bid = 2.5
-T = 365
-n_experiment = 10
-delay = 30
-contexts_mu_base = np.array([ np.array([10,10]) ,
+contexts_mu_base = np.array([ np.array([5,5]) ,
                                 np.array([10,10])])
 
-#todo fix this
-contexts_mu = contexts_mu_base
+
+delta_c1 = (compute_delta_customers(bid_modifiers_c1[bid_idx]))
+delta_c2 = (compute_delta_customers(bid_modifiers_c2[bid_idx]))
+delta_c3 = (compute_delta_customers(bid_modifiers_c3[bid_idx]))
+
+
+contexts_deltas = np.array([ np.array([delta_c1/2,delta_c1/2]) ,
+                                np.array([delta_c2,delta_c3])])
+
+contexts_mu = np.add(contexts_mu_base, contexts_deltas)
+print(contexts_mu)
 
 contexts_sigma = np.array([ np.array([math.sqrt(1),math.sqrt(1)]) ,
                          np.array([math.sqrt(1),math.sqrt(1)])])
 
-contexts_bid_offsets = np.array([ np.array([10,10]) ,
-                                 np.array([15,5])])
+contexts_bid_offsets = np.array([ np.array([8.0,8.0]) ,
+                                 np.array([15.0,5.0])])
 
 contexts_n_returns_coeff = np.array([ np.array([4.0,4.0]) ,
                                  np.array([2.0,3.0])])

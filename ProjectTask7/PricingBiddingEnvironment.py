@@ -6,7 +6,7 @@ from Environment import Environment
 # reward = ((sells + total_returns) * self.prices[pulled_arm]) - costs
 class PricingBiddingEnvironment():
     
-    def __init__(self, prices, prod_cost, bids, bid_modifiers, contexts_bid_offsets, first_buy_probabilities, mu_new, sigma_new, contexts_n_returns_coeffs,features_matrix):
+    def __init__(self, prices, prod_cost, bids, bid_modifiers, contexts_bid_offsets, first_buy_probabilities, mu_new, sigma_new,delta_customers_multipliers, contexts_n_returns_coeffs,features_matrix):
         #super().__init__(n_arms, probabilities)
         self.idx_price = 1
         self.idx_bid = 0
@@ -18,9 +18,10 @@ class PricingBiddingEnvironment():
         self.first_buy_probabilities = first_buy_probabilities
         self.mu_new = mu_new
         self.sigma_new = sigma_new
+        self.delta_customers_multipliers = delta_customers_multipliers
         self.contexts_n_returns_coeffs = contexts_n_returns_coeffs
         self.features_matrix = features_matrix
-        self.classes = [Customer_class(prices,prod_cost,bids,bid_modifiers[features_matrix[_][0]][features_matrix[_][1]],contexts_bid_offsets[features_matrix[_][0]][features_matrix[_][1]] , first_buy_probabilities[features_matrix[_][0]][features_matrix[_][1]],mu_new[features_matrix[_][0]][features_matrix[_][1]],sigma_new[features_matrix[_][0]][features_matrix[_][1]],contexts_n_returns_coeffs[features_matrix[_][0]][features_matrix[_][1]],features_matrix[_]) for _ in range(len(features_matrix))]
+        self.classes = [Customer_class(prices,prod_cost,bids,bid_modifiers[features_matrix[_][0]][features_matrix[_][1]],contexts_bid_offsets[features_matrix[_][0]][features_matrix[_][1]] , first_buy_probabilities[features_matrix[_][0]][features_matrix[_][1]],mu_new[features_matrix[_][0]][features_matrix[_][1]],sigma_new[features_matrix[_][0]][features_matrix[_][1]], delta_customers_multipliers[features_matrix[_][0]][features_matrix[_][1]], contexts_n_returns_coeffs[features_matrix[_][0]][features_matrix[_][1]],features_matrix[_]) for _ in range(len(features_matrix))]
 
         #self.results = ""
 
@@ -33,11 +34,10 @@ class PricingBiddingEnvironment():
         return classes_returns,classes_number
 
 class Customer_class():
-    def __init__(self,prices,prod_cost,bids,bid_modifiers,bid_offset, probabilities,mu_new,sigma_new,n_returns_coeff,features_vector):
+    def __init__(self, prices, prod_cost, bids, bid_modifiers, bid_offset, probabilities, mu_new, sigma_new, delta_customers_multiplier, n_returns_coeff,features_vector):
         self.idx_price = 1
         self.idx_bid = 0
-
-        
+        self.delta_customers_multiplier = delta_customers_multiplier
         self.prices = prices
         self.prod_cost = prod_cost
         self.bids = bids
@@ -51,7 +51,7 @@ class Customer_class():
     
     #TODO differenziare le poisson per classe
     def round(self,pulled_arm):
-        delta_customers = 50*(self.bid_modifiers[pulled_arm[self.idx_bid]]*2)
+        delta_customers = 50*(self.bid_modifiers[pulled_arm[self.idx_bid]]*2)*self.delta_customers_multiplier
         new_customers = round(np.random.normal((self.mu_new + delta_customers),self.sigma_new))
         single_rewards = np.zeros(np.sum(new_customers))
         single_cost_per_click = np.zeros(np.sum(new_customers))

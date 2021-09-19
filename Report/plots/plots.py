@@ -36,7 +36,7 @@ for price in prices:
     plt.vlines(x_discr-0.3, 0, y1_discr, 'r', linewidth=5)
     plt.vlines(x_discr-0.1, 0, y2_discr, 'g', linewidth=5)
     plt.vlines(x_discr+0.1, 0, y3_discr, 'b', linewidth=5)
-    plt.vlines(x_discr+0.3, 0, aggr, 'orange', linestyle="dashed", linewidth=5)
+    plt.vlines(x_discr+0.3, 0, aggr, 'orange', linestyle="solid", linewidth=5)
     #plt.vlines(x_discr+0.2, 0, y_mean_discr, 'purple')
     #plt.vlines(x_discr+0, 0, y_meanc_discr, 'purple')
     print("price = {}".format(price))

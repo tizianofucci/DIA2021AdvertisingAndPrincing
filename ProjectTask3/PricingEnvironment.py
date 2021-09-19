@@ -39,8 +39,8 @@ class PricingEnvironment(Environment):
 
         
 class  Customer():
-    def __init__(self,first_buy_probabilities):
-        self.first_buy_probabilities = first_buy_probabilities
+    def __init__(self,conv_rates):
+        self.conv_rates = conv_rates
     def round_costumer(self,pulled_arm):
-        reward = np.random.binomial(1, self.first_buy_probabilities[pulled_arm])
+        reward = np.random.binomial(1, self.conv_rates[pulled_arm])
         return reward

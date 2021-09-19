@@ -18,12 +18,11 @@ class UCB_Learner(Learner):
         self.t += 1
         return return_index
 
-    #TODO normalizzazione upper bound
     def update(self, pulled_arm, reward):
         self.update_observations(pulled_arm, reward)
         self.means[pulled_arm] = np.mean(self.rewards_per_arm[pulled_arm])
         for i in range(0,self.n_arms):
             if len(self.rewards_per_arm[i]) > 0:
-                self.upper_bounds[i] = self.means[i] + 300*sqrt((2*log(self.t+1))/len(self.rewards_per_arm[i]))
+                self.upper_bounds[i] = self.means[i] + 150*sqrt((2*log(self.t+1))/len(self.rewards_per_arm[i]))
             else:
                 self.upper_bounds[i] = 0
