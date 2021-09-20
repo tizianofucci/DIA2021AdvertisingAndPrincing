@@ -1,8 +1,14 @@
-from matplotlib.pyplot import new_figure_manager
-from scipy.stats.morestats import _calc_uniform_order_statistic_medians
 from Environment import Environment
 import numpy as np
 
+"""
+Environment used for sampling rewards, given the pulled arm (price).
+    mu_new: Average new potential customers for the day.
+    sigma_new: Stddev of new potential customers for the day.
+    returns_coeff: Paremeter affecting the mean of the poisson distribution used for sampling number of returns.
+    bid_offset: Parameter affecting single-cost-per-click discount.
+    
+"""
 class PricingEnvironment(Environment):
     
     def __init__(self,n_arms,prices, prod_cost, probabilities, contexts_bid_offsets, mu_new,sigma_new,contexts_n_returns_coeff,features_matrix):
@@ -14,18 +20,19 @@ class PricingEnvironment(Environment):
         self.total_returns_per_arm = [[] for _ in range(n_arms)]
         self.features_matrix = features_matrix
         self.classes = [Customer_class(n_arms, prices, prod_cost, probabilities[features_matrix[_][0]][features_matrix[_][1]],contexts_bid_offsets[features_matrix[_][0]][features_matrix[_][1]], mu_new[features_matrix[_][0]][features_matrix[_][1]],sigma_new[features_matrix[_][0]][features_matrix[_][1]],contexts_n_returns_coeff[features_matrix[_][0]][features_matrix[_][1]],features_matrix[_]) for _ in range(len(features_matrix))]
-
-    #TODO split reward per class
+    """
+    Collects all rewards from classes of customers
+    """
     def round(self,pulled_arm,bid):
         classes_returns = np.zeros(len(self.classes))
-        classes_number= np.zeros(len(self.classes))
-
         for i in range(len(self.classes)):
-            classes_returns[i],classes_number[i] = self.classes[i].round(pulled_arm[i],bid)
-        return classes_returns,classes_number
+            classes_returns[i] = self.classes[i].round(pulled_arm[i],bid)
+        return classes_returns
 
 
-
+"""
+Class that simulates the behaviour of all customers with the same features
+"""
 class Customer_class(Environment):
     def __init__(self,n_arms,prices,prod_cost,probabilities,bid_offset,mu_new,sigma_new,n_returns_coeff,features_vector):
         super().__init__(n_arms,probabilities)
@@ -38,7 +45,6 @@ class Customer_class(Environment):
         self.n_returns_coeff = n_returns_coeff
         self.features_vector = features_vector
     
-    #TODO differenziare le poisson per classe
     def round(self,pulled_arm,bid):
         
         new_customers = abs(round(np.random.normal(self.mu_new,self.sigma_new)))
@@ -61,7 +67,7 @@ class Customer_class(Environment):
         total_returns = np.sum(n_returns)
         self.total_returns_per_arm[pulled_arm] = np.append(self.total_returns_per_arm[pulled_arm],total_returns)
         money_reward = ((sells + total_returns) * (self.prices[pulled_arm] - self.prod_cost)) - costs
-        return money_reward,new_customers
+        return money_reward
      
 class  Customer():
     def __init__(self,first_buy_probabilities,feature_vector):
