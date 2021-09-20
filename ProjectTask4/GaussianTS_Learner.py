@@ -1,6 +1,11 @@
 from Learner import *
 import numpy as np
 
+"""
+Gaussian Thompson sampling learner
+τ: Increment applied on precision at each update.
+precision_of_rewards: 1/variance.
+"""
 class GaussianTS_Learner(Learner):
     def __init__(self, n_arms,delay):
         super().__init__(n_arms)

@@ -6,10 +6,7 @@ from ContextEnvironment import ContextEnvironment
 from queue import Queue
 import numpy as np
 from numpy.core.fromnumeric import argmax
-import pandas as pd
 import matplotlib.pyplot as plt
-from numpy.core.function_base import linspace
-import seaborn as sns
 from Environment import *
 from PricingEnvironment import *
 from TS_Learner import *
@@ -24,8 +21,8 @@ prices = np.array(UtilFunctions.global_prices)
 bids = UtilFunctions.global_bids
 prod_cost = 3.0
 n_arms = 10
-bid_idx = 4
-bid = bids[bid_idx] #=2.5
+bid_idx = 3
+bid = bids[bid_idx] 
 T = 365
 n_experiment = 10
 delay = 30
@@ -45,8 +42,6 @@ features_matrix = [[0,0],
                    [0,1],
                    [1,0],
                    [1,1]]
-
-features_column_to_class = [0,0,1,2]
 
 contexts_mu_base = np.array([ np.array([5,5]) ,
                                 np.array([10,10])])
@@ -72,6 +67,10 @@ contexts_bid_offsets = np.array([ np.array([8.0,8.0]) ,
 contexts_n_returns_coeff = np.array([ np.array([4.0,4.0]) ,
                                  np.array([2.0,3.0])])
 
+"""
+Computes expected reward given an arm.
+
+"""
 def expected(arm_price,feature_a,feature_b):
     price = prices[arm_price]
     n_returns = (contexts_n_returns_coeff[feature_a][feature_b]/(2*(price/10)+0.5))
@@ -92,6 +91,9 @@ ts_rewards_per_experiment = []
 
 pulled_arm_buffer_ts = Queue(maxsize=31)
 
+"""
+Run experiments, collect rewards
+"""
 for e in range(0,n_experiment):
     env = ContextEnvironment(n_arms,prices, prod_cost, contexts_prob,contexts_bid_offsets,contexts_mu,contexts_sigma,contexts_n_returns_coeff,features_matrix)
     context_gts_learner = ContextGaussianTS_Learner(n_arms,delay,features_matrix)
@@ -102,15 +104,15 @@ for e in range(0,n_experiment):
 
         if t>=delay:
             after_30_days_arm_ts = pulled_arm_buffer_ts.get()
-            rewards,users_segmentation = env.round(after_30_days_arm_ts,bid)
-            context_gts_learner.update(after_30_days_arm_ts,rewards,users_segmentation)
-            if t>=160 and t%10==0:
+            rewards = env.round(after_30_days_arm_ts,bid)
+            context_gts_learner.update(after_30_days_arm_ts,rewards)
+            if t>=130 and t%5==0:
                 context_gts_learner.try_splitting()
 
     ts_rewards_per_experiment.append(context_gts_learner.collected_rewards)    
     print(e)
 
-
+## Plot cumulative regret results
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
@@ -118,11 +120,20 @@ plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r')
 plt.legend(["TS"])
 plt.show()
 
+## Plot rewards
+x=np.arange(0,T-delay,1)
+plt.xlabel("t")
+plt.ylabel("Rewards - TS")
+plt.plot(x, np.mean(ts_rewards_per_experiment, axis=0),'-ok',color='red', markersize=4, linewidth=0.25)
+plt.show()
+
+## Plot Gaussians of each learner, averaged across all experiments
 x=np.arange(-100,opt + 100,0.01)
 for _ in range(len(context_gts_learner.active_learners)):  
     for i in range(n_arms):
-        plt.plot(x, norm.pdf(x, context_gts_learner.learners[_].means_of_rewards[i], 1/np.sqrt(context_gts_learner.learners[_].precision_of_rewards[i])), label=str(i))
-    plt.legend()
+        variance = np.mean(1/context_gts_learner.learners[_].precision_of_rewards[i])
+        plt.plot(x, norm.pdf(x, np.mean(context_gts_learner.learners[_].means_of_rewards[i]), math.sqrt(variance)), label="{}".format(i), linewidth = 2)
+        plt.legend()
     plt.show()
 
 
