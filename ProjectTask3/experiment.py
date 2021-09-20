@@ -147,7 +147,8 @@ plt.show()
 
 x=np.arange(100,(opt*1.2),0.01)
 for i in range(n_arms):
-    plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[i], 1/np.sqrt(gts_learner.precision_of_rewards[i])), label=str(i))
+    variance = np.mean(1/gts_learner.precision_of_rewards[i])
+    plt.plot(x, norm.pdf(x, np.mean(gts_learner.means_of_rewards[i]), math.sqrt(variance)), label="{}".format(i), linewidth = 2)
 plt.legend()
 plt.xlabel("X")
 plt.ylabel("P(X)")
