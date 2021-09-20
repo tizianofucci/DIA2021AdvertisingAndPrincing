@@ -33,7 +33,14 @@
     urlcolor = black
 }
 
+% To add and format (pseudo)code
+\usepackage{listings}
 
+\lstdefinestyle{myListingStyle} 
+    {
+        basicstyle = \small\ttfamily,
+        breaklines = false,
+    }
 %To load PoLitecnico's logo
 \usepackage{titling}
 
@@ -71,7 +78,7 @@
 \posttitle{\end{center}}
 
 % Here we go
-\title{Data Intelligence Applications Homework}
+\title{Data Intelligence Applications: homework}
 \author{D'Amato Francesco - 10560062 - 945814, \\
 	Frantuma Elia - 10567359 - 945729, \\
 	Fucci Tiziano - 10524029 - 946638}
@@ -100,7 +107,8 @@ The product we have chosen to simulate this advertising scenario is an energy dr
 \end{figure}
 	%end of first chapter
 
-	\chapter{Environment}		
+	\chapter{Environment}	
+		\label{chap:env}	
 In this section we give a precise definition of the customer classes and their features, cost functions and distribution probabilities on which the model is based.
 
 		\section{Customers classes}
@@ -172,10 +180,10 @@ that is assuming that we are generally paying for $\frac 9 {10}$ of our bid. The
 
 			\subsection{Daily clicks of new users}
 The number of daily clicks of new users of class $\mathcal C_i$ is a random variable drawn from a Gaussian distribution:
-\[ X_i\sim \mathcal{N}(\mu_i,\,\sigma^{2})\]
+\[ X_i\sim \mathcal{N}(\mu_i,\,\sigma^{2}|b)\]
 If the task requires to find the optimal bidding strategy, we model the influence of the bid on the number of daily clicks:
-\[ X_i \sim \mathcal{N}(\mu_{0,i}+\mu_{bid,i},\,\sigma^{2})\]
-where $\mu_{0,i}$ is a fixed value and $\mu_{bid,i}$ is an increment which grows monotonically with the bid.
+\[ X_i \sim \mathcal{N}(\mu_{0,i}+\mu_{bid,i}(b),\,\sigma^{2})\]
+where $\mu_{0,i}$ is a fixed value and $\mu_{bid,i}(b)$ is an increment which grows monotonically with the bid.
 
 			\subsection{Conversion rate functions}
 The conversion rate functions are defined for each class as the probability that the user of that class will buy the product at a given price. In particular, we have:
@@ -242,17 +250,60 @@ For the aggregate model:
 			\subsection{Task}
 \textit{Formulate the objective function when assuming that, once a user makes a purchase with a price p, then the ecommerce will propose the same price p to future visits of the same user and this user will surely buy the item. The revenue function must take into account the cost per click, while there is no budget constraint. Provide an algorithm to find the best joint bidding/pricing strategy and describe its complexity in the number of values of the bids and prices available (assume here that the values of the parameters are known). In the following steps, assume that the number of bid values are 10 as well as the number of price values.}
 			\subsection{Solution}
+Given a set of bids $B$ and a set of prices $P$, the  objective function is:
+\[ maximize \: \: \: \mathcal R(p,b) =  \sum_{i=1}^{q(b)}{[(p - c_{prod})(1+n_i(p)) - c_i(b)]}\]
+so we are interested in finding the best pair of price and bid:
+\[ (p_{opt}, b_{opt}) = \argmax_{p \in P,\: b \in B}\{ \mathcal R(p,b)\} = \argmax_{p \in P,\: b \in B}\left\{ \sum_{i=1}^{q(b)}{[(p - c_{prod})(1+n_i(p)) - c_i(b)]}  \right\}\]
+where:
+\begin{itemize}
+	\item $q(b)$ is the number of ``first" purchases;
 
+TODO: CONVRATE*VISITE
+	\item $c_{prod}$ is the production cost per item;
+	\item $n_i(p)$ is the number of future visits of user $i$;
+	\item $c_i(b)$ is the cost per click for the single user $i$; 
+\end{itemize}
+
+The algorithm is the iteration over all the values of $p$ in $P$ and $b$ in $B$ to find the maximum return.
+
+\begin{lstlisting}[mathescape=true]
+    $\mathcal A:$    max$\:\leftarrow - \infty$
+	for $p$ in $P$
+	  for $b$ in $B$
+	    if $\mathcal R(p,b) >\:$max 
+	    then max$\:\leftarrow \mathcal R(p,b)$
+	return max
+\end{lstlisting}
+and thus its complexity is: $\mathfrak C(\mathcal A) = \mathcal O(|P|\cdot |B|)$
 		\section{Step 2}
 			\subsection{Task}
 \textit{Consider the online learning version of the above optimization problem when the parameters are not known. Identify the random variables, potential delays in the feedback, and choose a model for each of them when a round corresponds to a single day. Consider a time horizon of one year.}
 			\subsection{Solution}
+As explained in  \autoref{chap:env}, the random variables are the following (we now consider the aggregate model):
+\begin{itemize}
+	\item the daily clicks of new users: $d_t(b_t) \sim \mathcal{N}(\mu_{0,i}+\mu_{bid,i}(b_t),\,\sigma^{2})$
+	\item the number of ``first" purchases at day $t$: $q_t(b_t,p_t) = \sum_{i=1}^{d_t(b_t)}{X(p_t)}$, where $X(p_t) \sim \mathcal{B}e(r(p_t), 1-r(p_t))$ and $r(p_t)$ is the conversion rate function evaluated at price $p_t$.
+	\item the cost per click: $c_i(b_t) =  b_t - |X(b_t)|, \: X\sim \mathcal{N}(\frac {b_t}{\alpha}, 0.1)$, where $\alpha$ is a normalized constant found by averaging the values for each class.
+	\item the number of future purchases of each user: $n_i(p)\sim  \mathcal{P}oisson(\lambda)$
+\end{itemize}
+the feedback delay is $T=30d$ and the objective function is:
+
+\[ maximize \: \: \:  \sum_{t=1}^{365}{\mathcal R_t(p,b)} = \sum_{t=1}^{365}{\sum_{i=1}^{q_t(b,p)}{[(p_t - c_{prod})(1+n_i(p_t)) - c_i(b_t)]}}\]
+where:
+\begin{itemize}
+	\item $p_t$ is the price chosen for day $t$
+	\item $b_t$ is the bid chosen for day $t$
+	\item $q_t(b,p)$ is the number of ``first" purchases at day $t$;
+	\item $c_{prod}$ is the production cost per item;
+	\item $n_i(p)$ is the number of future visits of user $i$;
+	\item $c_i(b)$ is the cost per click for the single user $i$; 
+\end{itemize}
 
 		\section{Step 3}
 			\subsection{Task}
 \textit{Consider the case in which the bid is fixed and learn in online fashion the best pricing strategy when the algorithm does not discriminate among the customers’ classes (and therefore the algorithm works with aggregate data). Assume that the number of daily clicks and the daily cost per click are known. Adopt both an upper-confidence bound approach and a Thompson-sampling approach and compare their performance.}
 			\subsection{Results}
-
+TODO: PLOT REWARDS
 \begin{figure}[H]
 \centering
   \includegraphics[scale = 0.8, center]{3r}
@@ -316,10 +367,10 @@ Step 3 requires to adopt an upper-confidence bound approach. The algorithm we us
 \begin{enumerate}[i)]
 	\item play the arm $a=t$  $\%$  $|A|$ for the first $|A|+30$ timesteps;
 	\item at timestep $t$ play arm $a_t$ such that:
-		$$a_t \leftarrow \argmax_{a \in A} \left\{\bar x + 150 \sqrt{\frac{2 \log(t)}{n_a(t-1)}}\right\} $$
+		$$a_t \leftarrow \argmax_{a \in A} \left\{\bar x + 70 \sqrt{\frac{2 \log(t)}{n_a(t-1)}}\right\} $$
 TODO: CHECK THIS
 \end{enumerate}
-where $n_a(t-1)$ is the number of times arm $a$ has been pulled before timestep $t$. The factor 150 is a normalizing constant, since the original expression of the UCB1 algorithm bound comes from the Hoeffding bound, which is made to estimate the expected value of a random variable with support in [0,1]. Since the rewards have much larger values, we need to adjust the respective upper bound on their expected value.
+where $n_a(t-1)$ is the number of times arm $a$ has been pulled before timestep $t$. The factor 70 is a normalizing constant, since the original expression of the UCB1 algorithm bound comes from the Hoeffding bound, which is made to estimate the expected value of a random variable with support in [0,1]. Since the rewards have much larger values, we need to adjust the respective upper bound on their expected value.
 
 The regret of the UCB algorithm is: \\TODO: INSERT EXPRESSION
 
@@ -339,6 +390,7 @@ Except for the prior updates, the procedure is similar to the one used for Berno
 	\item update the Gaussian distribution of arm $a_t$ as:
 		$$\tau_{0,a} \leftarrow \tau_{0,a} + n_a(t-1)\tau_a $$
 		$$\mu_{0,a} \leftarrow \frac{\tau_{0,a}\mu_{0,a} + \tau_a \sum_{i=1}^{n}{x_i}}{\tau_{0,a} + n_a(t)\tau_a} $$
+		for more details, see \autoref{chap:ref}.
 \end{enumerate}
 where:
 \begin{itemize}
@@ -350,11 +402,13 @@ where:
 \end{itemize}		
 
 \section{Gaussian Process Thompson Sampling}
+\section{Context Generation algorithm}
 
 
 
 	%end of fourth chapter
 	\chapter{References}
+		\label{chap:ref}
 		\section{Links}
 
 \begin{itemize}

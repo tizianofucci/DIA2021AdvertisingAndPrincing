@@ -22,7 +22,7 @@ T = 365
 n_experiment = 50
 delay = 30
 
-bids = 1.8*np.array(UtilFunctions.global_bids)
+bids = 2*np.array(UtilFunctions.global_bids)
 
 bid_modifiers_c1 = [0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 0.9, 0.9, 1.4, 1.4]
 bid_modifiers_c2 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]

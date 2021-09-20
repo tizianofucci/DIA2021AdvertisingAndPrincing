@@ -20,7 +20,7 @@ import UtilFunctions
 n_arms = 10
 prod_cost = 3.0
 T = 365
-n_experiment = 30
+n_experiment = 3
 delay = 30
 sigma_new_customer = math.sqrt(1)
 
@@ -97,12 +97,14 @@ for e in range(0,n_experiment):
     print(e)
 
 
+x=np.arange(1,T,0.01)
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
 plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r', linewidth=4)
 plt.plot(np.cumsum(np.mean(opt - ucb_rewards_per_experiment, axis=0)), 'g', linewidth=4)
-plt.legend(["TS","UCB"])
+plt.plot(x, 2050*np.log(x), 'b', linewidth=3, linestyle="dashed")
+plt.legend(["TS","UCB", "K*log(t)"])
 plt.show()
 
 ax = plt.subplots()
