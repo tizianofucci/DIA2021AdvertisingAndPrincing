@@ -121,7 +121,7 @@ plt.show()
 x=np.arange(-100,1200,0.01)
 for _ in range(len(context_gts_learner.active_learners)):  
     for i in range(n_arms):
-        plt.plot(x, norm.pdf(x, context_gts_learner.learners[_].means_of_rewards[i], 1/context_gts_learner.learners[_].precision_of_rewards[i]), label=str(i))
+        plt.plot(x, norm.pdf(x, context_gts_learner.learners[_].means_of_rewards[i], 1/np.sqrt(context_gts_learner.learners[_].precision_of_rewards[i])), label=str(i))
     plt.legend()
     plt.show()
 

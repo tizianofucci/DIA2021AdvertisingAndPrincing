@@ -7,7 +7,7 @@ class GaussianTS_Learner(Learner):
 
         self.τ_0 = 0.0001  # the posterior precision
         self.μ_0 = 1       # the posterior mean
-        self.τ = 0.004
+        self.τ = 0.005
         self.means_of_rewards = [1 for _ in range(self.n_arms)]
         self.precision_of_rewards = [0.0001 for _ in range(self.n_arms)]
         self.delay = delay
@@ -16,7 +16,7 @@ class GaussianTS_Learner(Learner):
         if(self.t < self.n_arms + self.delay):
             idx = self.t % self.n_arms
         else :
-            idx = np.argmax(np.random.normal(self.means_of_rewards,np.divide(1, self.precision_of_rewards)))
+            idx = np.argmax(np.random.normal(self.means_of_rewards,np.divide(1, np.sqrt(self.precision_of_rewards))))
         self.t += 1
         return idx
 

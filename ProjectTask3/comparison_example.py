@@ -113,7 +113,7 @@ plt.show()
 
 x=np.arange(100,(opt*1.2),0.01)
 for i in range(n_arms):
-    plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[i], 1/gts_learner.precision_of_rewards[i]), label=str(i), linewidth=3)
+    plt.plot(x, norm.pdf(x, gts_learner.means_of_rewards[i], 1/np.sqrt(gts_learner.precision_of_rewards[i])), label=str(i))
 
 plt.legend()
 plt.xlabel("X")

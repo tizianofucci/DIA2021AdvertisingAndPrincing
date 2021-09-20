@@ -9,7 +9,7 @@ class GaussianTS_Learner(Learner):
 
         self.τ_0 = 0.0001  # the posterior precision
         self.μ_0 = 1       # the posterior mean
-        self.τ = 0.004 #0.004
+        self.τ = 0.005 #0.004
         self.means_of_rewards = [1 for _ in range(self.n_arms)]
         self.precision_of_rewards = [self.τ_0 for _ in range(self.n_arms)]
         self.delay = delay
@@ -24,7 +24,7 @@ class GaussianTS_Learner(Learner):
                 idx = random.randrange(self.n_arms)
             else :
                 for i in range(len(mask)):
-                    neg_revenue_estimate = scipy.stats.norm.cdf(0, self.means_of_rewards[i], np.divide(1, self.precision_of_rewards[i]))
+                    neg_revenue_estimate = scipy.stats.norm.cdf(0, self.means_of_rewards[i], np.divide(1, np.sqrt(self.precision_of_rewards[i])))
                     if(neg_revenue_estimate > 0.2):
                         mask[i] = 1
                 if (sum(mask) == len(mask)):
