@@ -20,7 +20,7 @@ import UtilFunctions
 n_arms = 10
 prod_cost = 3.0
 T = 365
-n_experiment = 100
+n_experiment = 30
 delay = 30
 sigma_new_customer = math.sqrt(1)
 
