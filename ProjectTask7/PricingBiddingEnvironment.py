@@ -2,12 +2,18 @@ import numpy as np
 from Environment import Environment
 
 
-# conversion prob is known
-# reward = ((sells + total_returns) * self.prices[pulled_arm]) - costs
+"""
+Environment used for sampling rewards, given the pulled arm (pair: bid,price).
+    bid_modifiers: Multipliers affecting the number of clicks based on the bid
+    mu_new: baseline for new potential customers for the day(independent from bid).
+    sigma_new: Stddev of new potential customers for the day.
+    returns_coeff: Paremeter affecting the mean of the poisson distribution used for sampling number of returns.
+    bid_offset: Parameter affecting single-cost-per-click discount.
+    
+"""
 class PricingBiddingEnvironment():
     
     def __init__(self, prices, prod_cost, bids, bid_modifiers, contexts_bid_offsets, first_buy_probabilities, mu_new, sigma_new,delta_customers_multipliers, contexts_n_returns_coeffs,features_matrix):
-        #super().__init__(n_arms, probabilities)
         self.idx_price = 1
         self.idx_bid = 0
         self.contexts_bid_offsets = contexts_bid_offsets
@@ -22,8 +28,6 @@ class PricingBiddingEnvironment():
         self.contexts_n_returns_coeffs = contexts_n_returns_coeffs
         self.features_matrix = features_matrix
         self.classes = [Customer_class(prices,prod_cost,bids,bid_modifiers[features_matrix[_][0]][features_matrix[_][1]],contexts_bid_offsets[features_matrix[_][0]][features_matrix[_][1]] , first_buy_probabilities[features_matrix[_][0]][features_matrix[_][1]],mu_new[features_matrix[_][0]][features_matrix[_][1]],sigma_new[features_matrix[_][0]][features_matrix[_][1]], delta_customers_multipliers[features_matrix[_][0]][features_matrix[_][1]], contexts_n_returns_coeffs[features_matrix[_][0]][features_matrix[_][1]],features_matrix[_]) for _ in range(len(features_matrix))]
-
-        #self.results = ""
 
     def round(self,pulled_arm):
         classes_returns = np.zeros(len(self.classes))

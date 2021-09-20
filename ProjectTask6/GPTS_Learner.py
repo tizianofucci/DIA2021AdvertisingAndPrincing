@@ -7,6 +7,9 @@ import random
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 
+"""
+Gaussian Process Thompson sampling learner
+"""
 class GPTS_Learner(MatrixLearner):
     def __init__(self, n_arms_bids, n_arms_prices, arms, delay):
         super().__init__(n_arms_bids,n_arms_prices)
@@ -37,7 +40,6 @@ class GPTS_Learner(MatrixLearner):
 
 
         self.means, self.sigmas = self.gp.predict(self.matrixArms, return_std=True)
-#        self.sigmas = np.maximum(self.sigmas, 1e-2)
 
     def pull_arm(self):
         # estimate probability of negative revenue for each arm, if > 20% don't consider eligible for pulling.

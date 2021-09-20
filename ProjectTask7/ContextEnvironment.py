@@ -1,6 +1,10 @@
 from PricingBiddingEnvironment import PricingBiddingEnvironment
 import numpy as np
 
+"""
+Class containing a set of environments needed to allow
+an independent learning on different contexts
+"""
 class ContextEnvironment():
     def __init__(self,prices,prod_cost,bids,bid_modifiers,contexts_bid_offsets, contexts_prob,contexts_mu,contexts_sigma, delta_customers_multipliers, contexts_n_returns_coeffs, features_matrix):
         self.environments = [PricingBiddingEnvironment(prices,prod_cost,bids,bid_modifiers,contexts_bid_offsets, contexts_prob,contexts_mu,contexts_sigma, delta_customers_multipliers, contexts_n_returns_coeffs, features_matrix) for _ in range(4)]

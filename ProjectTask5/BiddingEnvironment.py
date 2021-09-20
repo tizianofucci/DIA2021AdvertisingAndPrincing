@@ -1,12 +1,18 @@
 import numpy as np
 
 
-# conversion prob is known
-# reward = ((sells + total_returns) * self.prices[pulled_arm]) - costs
+"""
+Environment used for sampling rewards, given the pulled arm (bid).
+    bid_modifiers: Multipliers affecting the number of clicks based on the bid
+    mu_new: baseline for new potential customers for the day(independent from bid).
+    sigma_new: Stddev of new potential customers for the day.
+    returns_coeff: Paremeter affecting the mean of the poisson distribution used for sampling number of returns.
+    bid_offset: Parameter affecting single-cost-per-click discount.
+    
+"""
 class BiddingEnvironment():
     
     def __init__(self, n_arms, price, prod_cost, bids, bid_modifiers, conv_rates, mu_new, sigma_new, returns_coeffs, bid_offsets):
-        #super().__init__(n_arms, probabilities)
         self.price = price
         self.prod_cost = prod_cost
         self.bids = bids
@@ -19,7 +25,7 @@ class BiddingEnvironment():
         self.bid_offsets = bid_offsets
         
     def round(self,pulled_arm):
-        delta_customers = 50*(self.bid_modifiers[pulled_arm]*2)
+        delta_customers = 200*(self.bid_modifiers[pulled_arm])
         new_customers = round(np.random.normal((self.mu_new + delta_customers),self.sigma_new))
         single_rewards = np.zeros(new_customers)
         single_cost_per_click = np.zeros(new_customers)

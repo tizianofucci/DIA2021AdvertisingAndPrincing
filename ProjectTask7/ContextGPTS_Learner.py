@@ -2,6 +2,11 @@ from MatrixLearner import *
 import numpy as np
 from GPTS_Learner import GPTS_Learner
 
+
+"""
+Class containing 9 learners that train simultaneously in order to figure out
+the best contexts to learn
+"""
 class ContextGPTS_Learner():
     def __init__(self, n_arms_bids,n_arms_prices,arms,delay,features_matrix):
         self.n_learners = 9
@@ -20,6 +25,10 @@ class ContextGPTS_Learner():
             indexes[i] = self.learners[i].pull_arm()
         return indexes
 
+    """
+    Given the rewards from the independent environments,
+    they are used to update the relative learner
+    """
     def update(self, pulled_arm, reward,users_segmentation):   
         actual_rewards = np.zeros(self.n_learners)
 
@@ -45,7 +54,9 @@ class ContextGPTS_Learner():
         return self.learners[id].means[best_arms[id]] - 10 * self.learners[id].sigmas[best_arms[id]]
 
 
-
+    """
+    Verifies if the conditions for context splitting are met, it uses a lower confidence bound on the best arm
+    """
     def try_splitting(self):
         best_arms = [np.argmax(self.learners[i].means) for i in range(self.n_learners)]
         if self.active_learners == [True,False,False,False,False,False,False,False,False]:
@@ -69,25 +80,26 @@ class ContextGPTS_Learner():
             diff_a = (split_a - self.lower_bound(1,best_arms))
             diff_b = (split_b - self.lower_bound(2,best_arms))
             
-            if diff_a>diff_b :
+            
+            if diff_a>diff_b and diff_a > 0 :
                 self.active_learners = [False,False,True,False,False,True,True,False,False]
                 print("Learner attivati : 00 01 1x")
 
-            else :
+            elif diff_b > 0 :
                 print("Learner attivati : 0x 10 11 (OKOK)")
                 self.active_learners = [False,True,False,False,False,False,False,True,True]
 
         elif self.active_learners == [False,False,False,True,True,False,False,False,False]:
             split_a = self.lower_bound(6,best_arms) + self.lower_bound(8,best_arms)
             split_b = self.lower_bound(5,best_arms) + self.lower_bound(7,best_arms)
-            
+
             diff_a = (split_a - self.lower_bound(4,best_arms))
             diff_b = (split_b - self.lower_bound(3,best_arms))
 
-            if diff_a > diff_b :
+            if diff_a > diff_b and diff_a > 0:
                 print("Learner attivati : x0 01 11")
                 self.active_learners = [False,False,False,True,False,False,True,False,True]
-            else:
+            elif diff_b > 0 :
                 print("Learner attivati : 00 10 x1")
                 self.active_learners = [False,False,False,False,True,True,False,True,False]
         elif self.active_learners != [False,False,False,False,False,True,True,True,True]:

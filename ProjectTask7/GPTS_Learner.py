@@ -7,6 +7,9 @@ import random
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C
 
+"""
+Gaussian Process Thompson sampling learner
+"""
 class GPTS_Learner(MatrixLearner):
     def __init__(self, n_arms_bids, n_arms_prices, arms, delay):
         super().__init__(n_arms_bids,n_arms_prices)
@@ -54,7 +57,7 @@ class GPTS_Learner(MatrixLearner):
             for i in range(len(mask)):
                 neg_revenue_estimate = scipy.stats.norm.cdf(0, self.means[i], self.sigmas[i])
                 if(neg_revenue_estimate > 0.2):
-                    mask[i] = 0
+                    mask[i] = 1
                 if (sum(mask) == mask.size):
                     raise Exception('negative revenue on all arms')
             masked_means = np.ma.masked_array(self.means, mask)

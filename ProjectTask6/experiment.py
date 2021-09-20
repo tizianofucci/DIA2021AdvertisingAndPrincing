@@ -18,8 +18,9 @@ from GPTS_Learner import *
 from UtilFunctions import *
 import UtilFunctions
 
+vector_of_Z = []
 n_arms = 10
-T = 230
+T = 180
 n_experiment = 3
 delay = 30
 mu_new_customer = 10
@@ -30,7 +31,7 @@ bids = UtilFunctions.global_bids
 
 bid_modifiers_c1 = [0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 0.9, 0.9, 1.4, 1.4]
 bid_modifiers_c2 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-bid_modifiers_c3 = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+bid_modifiers_c3 = [0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3]
 
 bid_modifiers = [bid_modifiers_c1, bid_modifiers_c2, bid_modifiers_c3]
 
@@ -64,7 +65,10 @@ for i in range(len(bids)):
 
 prob_by_bid = [np.average(class_probs, axis=0, weights = visits_per_class[:,i]) for i in range(len(bids))]
 
+"""
+Computes expected reward given an arm.
 
+"""
 def expected(arm_bids,arm_price):
     bid = bids[arm_bids]
     price = prices[arm_price]
@@ -76,7 +80,6 @@ def expected(arm_bids,arm_price):
     return conv_rate*n_visits*(price - prod_cost)*(expected_returns + 1) - (bid - bid/bid_offset) * (n_visits)
 
 expected_rewards = [expected(x,y) for x in range(len(bids)) for y in range(len(prices))]
-# print("expected rewards:\n", expected_rewards)
 
 opt_arm = argmax(expected_rewards)
 opt = expected_rewards[opt_arm]
@@ -88,7 +91,7 @@ print(expected_rewards.reshape(10,10))
 X, Y =  np.meshgrid(prices,bids)
 Z = expected_rewards.reshape(len(bids),len(prices))
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
+surf = ax.plot_surface(X, Y, Z, cmap=cm.RdYlGn,
     linewidth=0, antialiased=False)
 fig.colorbar(surf, shrink=0.5, aspect=5)
 plt.show()
@@ -98,15 +101,16 @@ ucb_rewards_per_experiment = []
 
 
 pulled_arm_buffer_ts = Queue(maxsize=31)
-opt_count = 0
 
+"""
+Run experiments, collect rewards
+"""
 for e in range(0,n_experiment):
     env = PricingBiddingEnvironment(prices, prod_cost, bids, bid_modifiers_aggr, prob_by_bid, mu_new_customer*3, sigma_new_customer, returns_coeffs=avg_coeffs, bid_offsets=avg_bid_offsets)
     gpts_learner = GPTS_Learner(len(bids),len(prices),[bids,prices],delay)
 
     pulled_arm_buffer_ts.queue.clear()
     
-
     for t in range (0,T):
         
         try:
@@ -121,12 +125,16 @@ for e in range(0,n_experiment):
             rewards = env.round(after_30_days_arm_ts)
             gpts_learner.update(after_30_days_arm_ts,rewards)
             
-        if t%20 == 0: print(t)
+        if t%20 == 0: 
+            print(t)
 
     ts_rewards_per_experiment.append(gpts_learner.collected_rewards)
+    Z_e = gpts_learner.means.reshape(len(bids),len(prices))
+    vector_of_Z.append(Z_e)
     print(e)
 
 
+## Plot cumulative regret
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
@@ -134,13 +142,12 @@ plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r')
 plt.legend(["TS"])
 plt.show()
 
+##Plot average means of GPTS
 X, Y =  np.meshgrid(prices,bids)
 Z = gpts_learner.means.reshape(len(bids),len(prices))
-
+Z = np.mean(vector_of_Z,axis=0)
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
+surf = ax.plot_surface(X, Y, Z, cmap=cm.RdYlGn,
                        linewidth=0, antialiased=False)
-
 fig.colorbar(surf, shrink=0.5, aspect=5)
-
 plt.show()
