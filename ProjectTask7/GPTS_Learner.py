@@ -22,8 +22,9 @@ class GPTS_Learner(MatrixLearner):
         self.delay = delay
 
         alpha = 10.0
-        #kernel = C(1.0, (1e-3, 5e2)) * RBF(1.0, (1e-3, 5e2))
-        kernel = C(1e10,constant_value_bounds='fixed') * RBF(length_scale=[0.2, 0.5])
+#        kernel = C(1.0, (1e-2, 1e20)) * RBF(1.0, (1e-2, 1e20))
+        kernel = C(1e5,'fixed') * RBF([2*0.15, 5*0.15],length_scale_bounds='fixed')
+
         self.gp = GaussianProcessRegressor(kernel = kernel, alpha = alpha**2, normalize_y=False, n_restarts_optimizer= 9)
 
     def update_observations_gp(self, pulled_arm, reward):
@@ -49,7 +50,6 @@ class GPTS_Learner(MatrixLearner):
             idx0 = random.randrange(self.n_arms_bids)
             idx1 = random.randrange(self.n_arms_prices)
             idx = (idx0, idx1)
-
         else :
             for i in range(len(mask)):
                 neg_revenue_estimate = scipy.stats.norm.cdf(0, self.means[i], self.sigmas[i])
