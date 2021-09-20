@@ -140,6 +140,14 @@ plt.show()
 gts_means_of_rewards = np.transpose(gts_means_of_rewards)
 gts_precision_of_rewards = np.transpose(gts_precision_of_rewards)
 
+## Plot daily rewards
+
+x=np.arange(0,T-delay,1)
+plt.xlabel("t")
+plt.ylabel("Rewards - TS")
+plt.plot(x, np.mean(ts_rewards_per_experiment, axis=0),'-ok',color='red', markersize=4, linewidth=0.25)
+plt.show()
+
 ## Plot average of Gaussians per arm
 x=np.arange(-100,opt*1.2,0.01)
 for i in range(n_arms):

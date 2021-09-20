@@ -106,7 +106,7 @@ for e in range(0,n_experiment):
             after_30_days_arm_ts = pulled_arm_buffer_ts.get()
             rewards = env.round(after_30_days_arm_ts,bid)
             context_gts_learner.update(after_30_days_arm_ts,rewards)
-            if t>=130 and t%5==0:
+            if t>=150 and t%5==0:
                 context_gts_learner.try_splitting()
 
     ts_rewards_per_experiment.append(context_gts_learner.collected_rewards)    

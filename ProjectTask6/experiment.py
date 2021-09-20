@@ -20,7 +20,7 @@ import UtilFunctions
 
 vector_of_Z = []
 n_arms = 10
-T = 180
+T = 250
 n_experiment = 3
 delay = 30
 mu_new_customer = 10
@@ -140,6 +140,14 @@ plt.xlabel("t")
 plt.ylabel("Regret")
 plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r')
 plt.legend(["TS"])
+plt.show()
+
+## Plot daily rewards
+
+x=np.arange(0,T-delay,1)
+plt.xlabel("t")
+plt.ylabel("Rewards - TS")
+plt.plot(x, np.mean(ts_rewards_per_experiment, axis=0),'-ok',color='red', markersize=4, linewidth=0.25)
 plt.show()
 
 ##Plot average means of GPTS
