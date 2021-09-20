@@ -102,7 +102,7 @@ for e in range(0,n_experiment):
             after_30_days_arm_ts = pulled_arm_buffer_ts.get()
             rewards,users_segmentation = env.round(after_30_days_arm_ts)
             context_gpts_learner.update(after_30_days_arm_ts,rewards,users_segmentation)
-            if t>=250 and t%5==0:
+            if t>=400 and t%5==0:
                 context_gpts_learner.try_splitting()
         # if t%20 ==0:
         #     print(t)
@@ -112,7 +112,6 @@ for e in range(0,n_experiment):
         vector_of_Z[i].append(Z_e)
     print(e)
 
-Z_mean = mean(vector_of_Z,axis=0)
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
