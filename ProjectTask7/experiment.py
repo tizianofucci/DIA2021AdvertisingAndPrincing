@@ -24,7 +24,7 @@ prices = np.array(UtilFunctions.global_prices)
 bids = UtilFunctions.global_bids
 prod_cost = 3.0
 n_arms = 10
-T = 230
+T = 300
 n_experiment = 5
 delay = 30
 contexts_prob = np.array([  np.array([np.array([conv_c1(x) for x in prices]),
@@ -127,6 +127,14 @@ plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r')
 plt.legend(["TS"])
 plt.show()
 
+## Plot daily rewards
+
+x=np.arange(0,T-delay,1)
+plt.xlabel("t")
+plt.ylabel("Rewards - TS")
+plt.plot(x, np.mean(ts_rewards_per_experiment, axis=0),'-ok',color='red', markersize=4, linewidth=0.25)
+plt.show()
+
 ##Plot average means of GPTS
 
 X, Y =  np.meshgrid(prices,bids)
@@ -136,5 +144,8 @@ for i in range(len(context_gpts_learner.learners)):
     surf = ax.plot_surface(X, Y, Z, cmap=cm.RdYlGn,
         linewidth=0, antialiased=False)
     fig.colorbar(surf, shrink=0.5, aspect=5)
+    ax.set_xlabel("Bid")
+    ax.set_ylabel("Price")
+    ax.set_zlabel("Reward")
 plt.show()
 
