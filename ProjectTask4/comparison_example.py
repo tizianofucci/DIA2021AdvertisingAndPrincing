@@ -32,7 +32,7 @@ delay = 30
 
 bid_modifiers_c1 = [0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 0.9, 0.9, 1.4, 1.4]
 bid_modifiers_c2 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-bid_modifiers_c3 = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+bid_modifiers_c3 = [0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3]
 bid_modifiers = [bid_modifiers_c1, bid_modifiers_c2, bid_modifiers_c3]
 
 
@@ -104,7 +104,7 @@ for e in range(0,n_experiment):
             after_30_days_arm_ts = pulled_arm_buffer_ts.get()
             rewards,users_segmentation = env.round(after_30_days_arm_ts,bid)
             context_gts_learner.update(after_30_days_arm_ts,rewards,users_segmentation)
-            if t>=300 and t%5==0:
+            if t>=160 and t%10==0:
                 context_gts_learner.try_splitting()
 
     ts_rewards_per_experiment.append(context_gts_learner.collected_rewards)    
@@ -119,10 +119,10 @@ plt.legend(["TS"])
 plt.show()
 
 x=np.arange(-100,opt + 100,0.01)
-# for _ in range(len(context_gts_learner.active_learners)):  
-#     for i in range(n_arms):
-#         plt.plot(x, norm.pdf(x, context_gts_learner.learners[_].means_of_rewards[i], 1/np.sqrt(context_gts_learner.learners[_].precision_of_rewards[i])), label=str(i))
-#     plt.legend()
-#     plt.show()
+for _ in range(len(context_gts_learner.active_learners)):  
+    for i in range(n_arms):
+        plt.plot(x, norm.pdf(x, context_gts_learner.learners[_].means_of_rewards[i], 1/np.sqrt(context_gts_learner.learners[_].precision_of_rewards[i])), label=str(i))
+    plt.legend()
+    plt.show()
 
 

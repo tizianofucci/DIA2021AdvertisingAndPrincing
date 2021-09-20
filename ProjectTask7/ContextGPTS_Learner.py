@@ -42,7 +42,7 @@ class ContextGPTS_Learner():
         self.collected_rewards = np.append(self.collected_rewards,np.sum(actual_rewards[self.active_learners]))
 
     def lower_bound(self,id,best_arms):
-        return self.learners[id].means[best_arms[id]] - 5 * self.learners[id].sigmas[best_arms[id]]
+        return self.learners[id].means[best_arms[id]] - 10 * self.learners[id].sigmas[best_arms[id]]
 
 
 
@@ -66,22 +66,28 @@ class ContextGPTS_Learner():
             split_a = self.lower_bound(5,best_arms) + self.lower_bound(6,best_arms)
             split_b = self.lower_bound(7,best_arms) + self.lower_bound(8,best_arms)
             
-            if split_a > self.lower_bound(1,best_arms) :
+            diff_a = (split_a - self.lower_bound(1,best_arms))
+            diff_b = (split_b - self.lower_bound(2,best_arms))
+            
+            if diff_a>diff_b :
                 self.active_learners = [False,False,True,False,False,True,True,False,False]
                 print("Learner attivati : 00 01 1x")
 
-            elif split_b >self.lower_bound(2,best_arms) :
+            else :
                 print("Learner attivati : 0x 10 11 (OKOK)")
                 self.active_learners = [False,True,False,False,False,False,False,True,True]
 
         elif self.active_learners == [False,False,False,True,True,False,False,False,False]:
             split_a = self.lower_bound(6,best_arms) + self.lower_bound(8,best_arms)
             split_b = self.lower_bound(5,best_arms) + self.lower_bound(7,best_arms)
+            
+            diff_a = (split_a - self.lower_bound(4,best_arms))
+            diff_b = (split_b - self.lower_bound(3,best_arms))
 
-            if split_a > self.lower_bound(3,best_arms) :
+            if diff_a > diff_b :
                 print("Learner attivati : x0 01 11")
                 self.active_learners = [False,False,False,True,False,False,True,False,True]
-            elif split_b > self.lower_bound(4,best_arms) :
+            else:
                 print("Learner attivati : 00 10 x1")
                 self.active_learners = [False,False,False,False,True,True,False,True,False]
         elif self.active_learners != [False,False,False,False,False,True,True,True,True]:

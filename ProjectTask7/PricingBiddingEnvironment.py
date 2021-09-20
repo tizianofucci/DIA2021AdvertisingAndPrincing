@@ -51,7 +51,7 @@ class Customer_class():
     
     #TODO differenziare le poisson per classe
     def round(self,pulled_arm):
-        delta_customers = 50*(self.bid_modifiers[pulled_arm[self.idx_bid]]*2)*self.delta_customers_multiplier
+        delta_customers = 200*(self.bid_modifiers[pulled_arm[self.idx_bid]])*self.delta_customers_multiplier
         new_customers = round(np.random.normal((self.mu_new + delta_customers),self.sigma_new))
         single_rewards = np.zeros(np.sum(new_customers))
         single_cost_per_click = np.zeros(np.sum(new_customers))

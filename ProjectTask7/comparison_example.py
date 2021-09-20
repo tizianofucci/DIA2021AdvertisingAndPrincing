@@ -24,7 +24,7 @@ prices = np.array(UtilFunctions.global_prices)
 bids = UtilFunctions.global_bids
 prod_cost = 3.0
 n_arms = 10
-T = 300
+T = 230
 n_experiment = 5
 delay = 30
 contexts_prob = np.array([  np.array([np.array([conv_c1(x) for x in prices]),
@@ -42,7 +42,7 @@ features_column_to_class = [0,0,1,2]
 bid_modifiers = np.array([  np.array([np.array([0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 0.9, 0.9, 1.4, 1.4]),
                             np.array([0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 0.9, 0.9, 1.4, 1.4])]),
                             np.array([np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]),
-                            np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5])])])
+                            np.array([0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3])])])
 
 
 contexts_mu = np.array([ np.array([5,5]) ,
@@ -64,7 +64,7 @@ def expected(arm_bids,arm_price,feature_a,feature_b):
     price = prices[arm_price]
     n_returns = (contexts_n_returns_coeffs[feature_a][feature_b]/(2*(price/10)+0.5))
     bid_offset = contexts_bid_offsets[feature_a][feature_b]
-    delta_customers = 50*(bid_modifiers[feature_a][feature_b][arm_bids]*2)*(delta_customers_multipliers[feature_a][feature_b])
+    delta_customers = 200*(bid_modifiers[feature_a][feature_b][arm_bids])*(delta_customers_multipliers[feature_a][feature_b])
     return (contexts_prob[feature_a][feature_b][arm_price]*(price - prod_cost)*(contexts_mu[feature_a][feature_b] +delta_customers) * (n_returns + 1)) - (bid - bid/bid_offset) * (contexts_mu[feature_a][feature_b] + delta_customers)
 
 opt_arms = []
@@ -102,7 +102,7 @@ for e in range(0,n_experiment):
             after_30_days_arm_ts = pulled_arm_buffer_ts.get()
             rewards,users_segmentation = env.round(after_30_days_arm_ts)
             context_gpts_learner.update(after_30_days_arm_ts,rewards,users_segmentation)
-            if t>=280 and t%5==0:
+            if t>=140 and t%5==0:
                 context_gpts_learner.try_splitting()
         # if t%20 ==0:
         #     print(t)
@@ -125,7 +125,7 @@ for i in range(len(context_gpts_learner.learners)):
     #if context_gpts_learner.active_learners[i] == True:
     Z = mean(vector_of_Z[i],axis=0)
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-    surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
+    surf = ax.plot_surface(X, Y, Z, cmap=cm.RdYlGn,
         linewidth=0, antialiased=False)
     fig.colorbar(surf, shrink=0.5, aspect=5)
 plt.show()

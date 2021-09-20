@@ -1,17 +1,20 @@
 from Learner import *
 import numpy as np
 
+"""
+Gaussian Thompson sampling learner
+τ: Increment applied on precision at each update.
+precision_of_rewards: 1/variance.
+"""
 class GaussianTS_Learner(Learner):
     def __init__(self, n_arms,delay):
         super().__init__(n_arms)
-
-        self.τ_0 = 0.0001  # the posterior precision
-        self.μ_0 = 1       # the posterior mean
         self.τ = 0.005
         self.means_of_rewards = [1 for _ in range(self.n_arms)]
         self.precision_of_rewards = [0.0001 for _ in range(self.n_arms)]
         self.delay = delay
 
+    ### Loops over all arms until first reward is discovered for every arm (n_arms + delay)
     def pull_arm(self):
         if(self.t < self.n_arms + self.delay):
             idx = self.t % self.n_arms
@@ -23,6 +26,4 @@ class GaussianTS_Learner(Learner):
     def update(self, pulled_arm, reward):
         self.update_observations(pulled_arm, reward)
         self.means_of_rewards[pulled_arm] = ((self.precision_of_rewards[pulled_arm] * self.means_of_rewards[pulled_arm]) + (self.τ * len(self.rewards_per_arm[pulled_arm]) * np.mean(self.rewards_per_arm[pulled_arm])))/(self.precision_of_rewards[pulled_arm] + self.τ * len(self.rewards_per_arm[pulled_arm]))
-        #self.means_of_rewards[pulled_arm] = np.mean(self.rewards_per_arm[pulled_arm])
-        #self.std_reward[pulled_arm] = np.std(self.rewards_per_arm[pulled_arm])
         self.precision_of_rewards[pulled_arm] += self.τ

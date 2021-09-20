@@ -1,6 +1,5 @@
-from numpy import log, mod, sqrt
-import numpy
-from pandas.core.dtypes.missing import na_value_for_dtype
+from numpy import log, sqrt
+import numpy as np
 from Learner import *
 
 class UCB_Learner(Learner):
@@ -10,6 +9,7 @@ class UCB_Learner(Learner):
         self.upper_bounds = np.zeros(n_arms)
         self.delay = delay
 
+    ### Loops over all arms until first reward is discovered for every arm (n_arms + delay)
     def pull_arm(self):
         if(self.t < self.n_arms + self.delay):
             return_index = self.t % self.n_arms
@@ -23,6 +23,7 @@ class UCB_Learner(Learner):
         self.means[pulled_arm] = np.mean(self.rewards_per_arm[pulled_arm])
         for i in range(0,self.n_arms):
             if len(self.rewards_per_arm[i]) > 0:
-                self.upper_bounds[i] = self.means[i] + 70*sqrt((2*log(self.t+1))/len(self.rewards_per_arm[i]))
+                ucb_coeff = 80  # Multiplier used for rescaling the upper bound. Used for tuning exploration/exploitation.
+                self.upper_bounds[i] = self.means[i] + ucb_coeff*sqrt((2*log(self.t+1))/len(self.rewards_per_arm[i]))
             else:
                 self.upper_bounds[i] = 0
