@@ -8,7 +8,7 @@ warnings.filterwarnings("ignore", category=ConvergenceWarning)
 from ContextEnvironment import ContextEnvironment
 from queue import Queue
 import numpy as np
-from numpy.core.fromnumeric import argmax
+from numpy.core.fromnumeric import argmax, mean
 import matplotlib.pyplot as plt
 from Environment import *
 from PricingBiddingEnvironment import *
@@ -19,12 +19,13 @@ from matplotlib import cm
 from UtilFunctions import *
 import UtilFunctions
 
+vector_of_Z = [[] for i in range(9)]
 prices = np.array(UtilFunctions.global_prices)
-bids = np.array(UtilFunctions.global_bids)
+bids = UtilFunctions.global_bids
 prod_cost = 3.0
 n_arms = 10
-T = 150
-n_experiment = 1
+T = 365
+n_experiment = 20
 delay = 30
 
 contexts_prob = np.array([  np.array([np.array([conv_c1(x) for x in prices]),
@@ -60,20 +61,12 @@ delta_customers_multipliers = np.array([ np.array([0.5,0.5]) ,
                                         np.array([1.0,1.0])])
 
 def expected(arm_bids,arm_price,feature_a,feature_b):
-    delta_customers = int(50*(bid_modifiers[feature_a][feature_b][arm_bids]*2)*(delta_customers_multipliers[feature_a][feature_b]))
     bid = bids[arm_bids]
     price = prices[arm_price]
-    bid_offset = contexts_bid_offsets[feature_a][feature_b]
-    total_clicks = (contexts_mu[feature_a][feature_b] + delta_customers)
-    expected_sales = int(contexts_prob[feature_a][feature_b][arm_price]*total_clicks)
     n_returns = (contexts_n_returns_coeffs[feature_a][feature_b]/(2*(price/10)+0.5))
-
-    total_sales = int(expected_sales * (n_returns + 1))
-
-    expected = total_sales * (price - prod_cost) - (bid - bid/bid_offset) * (total_clicks)
-
-    #return (contexts_prob[feature_a][feature_b][arm_price]*(price - prod_cost)*(contexts_mu[feature_a][feature_b] +delta_customers) * (n_returns + 1)) - (bid - bid/bid_offset) * (contexts_mu[feature_a][feature_b] + delta_customers)
-    return expected
+    bid_offset = contexts_bid_offsets[feature_a][feature_b]
+    delta_customers = 50*(bid_modifiers[feature_a][feature_b][arm_bids]*2)*(delta_customers_multipliers[feature_a][feature_b])
+    return (contexts_prob[feature_a][feature_b][arm_price]*(price - prod_cost)*(contexts_mu[feature_a][feature_b] +delta_customers) * (n_returns + 1)) - (bid - bid/bid_offset) * (contexts_mu[feature_a][feature_b] + delta_customers)
 
 opt_arms = []
 opt_rewards = []
@@ -85,31 +78,7 @@ for i in range(2):
         opt_arms.append(np.unravel_index(opt_arm,(10,10)))
 opt = np.sum(opt_rewards)
 
-print([expected(x,y,0,1) for x in range(len(bids)) for y in range(len(prices))])
-
 print("optimal rewards:{}, sum:{}, with arms:{}".format(opt_rewards,opt, opt_arms))
-
-expected_rewards = np.array([expected(x,y,0,0) for x in range(len(bids)) for y in range(len(prices))])
-expected_rewards2 = np.array([expected(x,y,0,1) for x in range(len(bids)) for y in range(len(prices))])
-print(expected_rewards.reshape(10,10))
-X, Y =  np.meshgrid(prices,bids)
-Z = expected_rewards.reshape(len(bids),len(prices))
-fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
-    linewidth=0, antialiased=False)
-fig.colorbar(surf, shrink=0.5, aspect=5)
-
-
-plt.show()
-Z = expected_rewards2.reshape(len(bids),len(prices))
-fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
-    linewidth=0, antialiased=False)
-fig.colorbar(surf, shrink=0.5, aspect=5)
-
-
-plt.show()
-
 
 ts_rewards_per_experiment = []
 
@@ -134,15 +103,17 @@ for e in range(0,n_experiment):
             after_30_days_arm_ts = pulled_arm_buffer_ts.get()
             rewards,users_segmentation = env.round(after_30_days_arm_ts)
             context_gpts_learner.update(after_30_days_arm_ts,rewards,users_segmentation)
-            if t>=160 and t%5==0:
+            if t>=250 and t%5==0:
                 context_gpts_learner.try_splitting()
-        if t%20 ==0:
-            print(t)
-                
+        # if t%20 ==0:
+        #     print(t)
     ts_rewards_per_experiment.append(context_gpts_learner.collected_rewards)
-    
+    for i in range(9):
+        Z_e = context_gpts_learner.learners[i].means.reshape(len(bids),len(prices))
+        vector_of_Z[i].append(Z_e)
     print(e)
 
+Z_mean = mean(vector_of_Z,axis=0)
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
@@ -151,44 +122,18 @@ plt.legend(["TS"])
 plt.show()
 
 X, Y =  np.meshgrid(prices,bids)
+#for i in range(5,7):
 for i in range(len(context_gpts_learner.learners)):
     #if context_gpts_learner.active_learners[i] == True:
-    Z = context_gpts_learner.learners[i].means.reshape(len(bids),len(prices))
+    Z = mean(vector_of_Z[i],axis=0)
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
     surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
-    linewidth=0, antialiased=False)
+        linewidth=0, antialiased=False)
     fig.colorbar(surf, shrink=0.5, aspect=5)
-
 plt.show()
 
-pulled_arms = np.array(context_gpts_learner.learners[5].pulled_arms).T
-pulled_arms = np.reshape(context_gpts_learner.learners[5].pulled_arms, (-1,2))
-pulled_bids = pulled_arms[:,0]
-unique, counts = np.unique(pulled_bids, return_counts=True)
-print(dict(zip(unique, counts)))
-pulled_prices = pulled_arms[:,1]
-unique, counts = np.unique(pulled_prices, return_counts=True)
-print(dict(zip(unique, counts)))
-#print(pulled_arms)
-#print(pulled_bids)
-#print(pulled_prices)
-
-print(context_gpts_learner.learners[5].means.reshape(len(bids),len(prices)))
-print(context_gpts_learner.learners[5].means.reshape(len(bids),len(prices)))
-
-
-pulled_arms = np.array(context_gpts_learner.learners[6].pulled_arms).T
-pulled_arms = np.reshape(context_gpts_learner.learners[6].pulled_arms, (-1,2))
-pulled_bids = pulled_arms[:,0]
-unique, counts = np.unique(pulled_bids, return_counts=True)
-print(dict(zip(unique, counts)))
-pulled_prices = pulled_arms[:,1]
-unique, counts = np.unique(pulled_prices, return_counts=True)
-print(dict(zip(unique, counts)))
-#print(pulled_arms)
-#print(pulled_bids)
-#print(pulled_prices)
-
-#print(context_gpts_learner.learners[6].means.reshape(len(bids),len(prices)))
-#print(context_gpts_learner.learners[6].means.reshape(len(bids),len(prices)))
-
+# fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+# surf = ax.plot_surface(X, Y, Z_mean, cmap=cm.coolwarm,
+#         linewidth=0, antialiased=False)
+# fig.colorbar(surf, shrink=0.5, aspect=5)
+# plt.show()

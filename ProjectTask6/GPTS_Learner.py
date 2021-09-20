@@ -21,7 +21,7 @@ class GPTS_Learner(MatrixLearner):
         self.delay = delay
 
         alpha = 10.0
-        kernel = C(1.0, (1e-3, 1e3)) * RBF(1.0, (1e-3, 1e3))
+        kernel = C(1.0, (1e-3, 5e2)) * RBF(1.0, (1e-3, 5e2))
         self.gp = GaussianProcessRegressor(kernel = kernel, alpha = alpha**2, normalize_y=False, n_restarts_optimizer= 9)
 
     def update_observations_gp(self, pulled_arm, reward):
