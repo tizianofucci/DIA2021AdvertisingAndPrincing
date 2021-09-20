@@ -25,7 +25,7 @@ bids = UtilFunctions.global_bids
 prod_cost = 3.0
 n_arms = 10
 T = 300
-n_experiment = 5
+n_experiment = 1
 delay = 30
 contexts_prob = np.array([  np.array([np.array([conv_c1(x) for x in prices]),
                             np.array([conv_c1(x) for x in prices])]),
@@ -144,8 +144,8 @@ for i in range(len(context_gpts_learner.learners)):
     surf = ax.plot_surface(X, Y, Z, cmap=cm.RdYlGn,
         linewidth=0, antialiased=False)
     fig.colorbar(surf, shrink=0.5, aspect=5)
-    ax.set_xlabel("Bid")
-    ax.set_ylabel("Price")
+    ax.set_xlabel("Price")
+    ax.set_ylabel("Bid")
     ax.set_zlabel("Reward")
 plt.show()
 
