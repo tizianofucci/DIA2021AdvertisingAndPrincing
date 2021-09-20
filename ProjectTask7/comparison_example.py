@@ -24,8 +24,8 @@ prices = np.array(UtilFunctions.global_prices)
 bids = UtilFunctions.global_bids
 prod_cost = 3.0
 n_arms = 10
-T = 365
-n_experiment = 30
+T = 300
+n_experiment = 5
 delay = 30
 contexts_prob = np.array([  np.array([np.array([conv_c1(x) for x in prices]),
                             np.array([conv_c1(x) for x in prices])]),
@@ -102,7 +102,7 @@ for e in range(0,n_experiment):
             after_30_days_arm_ts = pulled_arm_buffer_ts.get()
             rewards,users_segmentation = env.round(after_30_days_arm_ts)
             context_gpts_learner.update(after_30_days_arm_ts,rewards,users_segmentation)
-            if t>=400 and t%5==0:
+            if t>=280 and t%5==0:
                 context_gpts_learner.try_splitting()
         # if t%20 ==0:
         #     print(t)
