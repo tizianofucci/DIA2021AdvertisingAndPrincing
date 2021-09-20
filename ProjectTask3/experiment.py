@@ -1,4 +1,6 @@
-import os, sys 
+import os, sys
+
+from matplotlib import lines 
 currentdir = os.path.dirname(os.path.realpath(__file__)) 
 parentdir = os.path.dirname(currentdir) 
 sys.path.append(parentdir)
@@ -20,7 +22,7 @@ import UtilFunctions
 n_arms = 10
 prod_cost = 3.0
 T = 365
-n_experiment = 50
+n_experiment = 100
 delay = 30      #timesteps of delay before reward is discovered
 sigma_new_customer = math.sqrt(1)
 
@@ -109,19 +111,21 @@ for e in range(0,n_experiment):
 
 ## Plot cumulative regret results
 
+x=np.arange(1,T-delay,1)
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
-plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r', linewidth=4)
-plt.plot(np.cumsum(np.mean(opt - ucb_rewards_per_experiment, axis=0)), 'g', linewidth=4)
-plt.legend(["TS","UCB"])
+plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r', linewidth=3)
+plt.plot(np.cumsum(np.mean(opt - ucb_rewards_per_experiment, axis=0)), 'g', linewidth=3)
+plt.plot(x, 3800*np.log(x), 'orange', linestyle="dashed", linewidth=3)
+plt.legend(["TS","UCB", "K log(t)"])
 plt.show()
 
 
 
 ## Plot daily rewards
 
-x=np.arange(0,335,1)
+x=np.arange(0,T-delay,1)
 plt.xlabel("t")
 plt.ylabel("Rewards - TS")
 plt.plot(x, np.mean(ts_rewards_per_experiment, axis=0),'-ok',color='red', markersize=4, linewidth=0.25)
@@ -129,7 +133,7 @@ plt.show()
 
 plt.xlabel("t")
 plt.ylabel("Rewards - UCB")
-plt.plot(x, np.mean(ucb_rewards_per_experiment, axis=0),'-ok',color='green',markersize=4, linewidth=0.15)
+plt.plot(x, np.mean(ucb_rewards_per_experiment, axis=0),'-ok',color='green',markersize=4, linewidth=0.25)
 plt.show()
 
 

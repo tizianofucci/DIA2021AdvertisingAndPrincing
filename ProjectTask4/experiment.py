@@ -24,7 +24,7 @@ n_arms = 10
 bid_idx = 3
 bid = bids[bid_idx] 
 T = 365
-n_experiment = 10
+n_experiment = 25
 delay = 30
 
 bid_modifiers_c1 = [0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 0.9, 0.9, 1.4, 1.4]
@@ -113,11 +113,13 @@ for e in range(0,n_experiment):
     print(e)
 
 ## Plot cumulative regret results
+x=np.arange(1,T-delay,1)
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
-plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r')
-plt.legend(["TS"])
+plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r', linewidth = 3)
+plt.plot(x, 3800*np.log(x), 'orange', linestyle="dashed", linewidth=3)
+plt.legend(["TS", "K log(t)"])
 plt.show()
 
 ## Plot rewards
@@ -133,7 +135,9 @@ for _ in range(len(context_gts_learner.active_learners)):
     for i in range(n_arms):
         variance = np.mean(1/context_gts_learner.learners[_].precision_of_rewards[i])
         plt.plot(x, norm.pdf(x, np.mean(context_gts_learner.learners[_].means_of_rewards[i]), math.sqrt(variance)), label="{}".format(i), linewidth = 2)
-        plt.legend()
+    plt.legend()
+    plt.xlabel("X")
+    plt.ylabel("P(X)")
     plt.show()
 
 

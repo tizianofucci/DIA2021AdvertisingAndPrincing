@@ -20,8 +20,8 @@ import UtilFunctions
 
 vector_of_Z = []
 n_arms = 10
-T = 250
-n_experiment = 3
+T = 365
+n_experiment = 20
 delay = 30
 mu_new_customer = 10
 sigma_new_customer = math.sqrt(1)
@@ -135,11 +135,13 @@ for e in range(0,n_experiment):
 
 
 ## Plot cumulative regret
+x=np.arange(1,T-delay,1)    
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
-plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r')
-plt.legend(["TS"])
+plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r', linewidth=3)
+plt.plot(x, 10000*np.log(x), 'orange', linestyle="dashed", linewidth=3)
+plt.legend(["TS", "K log(t)"])
 plt.show()
 
 ## Plot daily rewards

@@ -24,8 +24,8 @@ prices = np.array(UtilFunctions.global_prices)
 bids = UtilFunctions.global_bids
 prod_cost = 3.0
 n_arms = 10
-T = 300
-n_experiment = 1
+T = 365
+n_experiment = 10
 delay = 30
 contexts_prob = np.array([  np.array([np.array([conv_c1(x) for x in prices]),
                             np.array([conv_c1(x) for x in prices])]),
@@ -120,11 +120,13 @@ for e in range(0,n_experiment):
     print(e)
 
 ## Plot regret
+x=np.arange(1,T-delay,1)    
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
-plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r')
-plt.legend(["TS"])
+plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r', linewidth=3)
+plt.plot(x, 12500*np.log(x), 'orange', linestyle="dashed", linewidth=3)
+plt.legend(["TS", "K log(t)"])
 plt.show()
 
 ## Plot daily rewards

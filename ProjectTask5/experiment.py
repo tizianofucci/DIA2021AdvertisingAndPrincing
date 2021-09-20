@@ -17,9 +17,10 @@ n_arms = 10
 prod_cost = 3.0
 
 T = 365
-n_experiment = 50
+n_experiment = 100
 delay = 30
 
+# Doubled in order to have negative revenue on some arms
 bids = 2*np.array(UtilFunctions.global_bids)
 
 bid_modifiers_c1 = [0.05, 0.05, 0.3, 0.3, 0.5, 0.5, 0.9, 0.9, 1.4, 1.4]
@@ -130,12 +131,14 @@ for e in range(0,n_experiment):
     if (argmax(n_pulls_per_arm) == opt_arm):
         opt_count +=1
 
-## Plot of cumulative regret       
+## Plot of cumulative regret   
+x=np.arange(1,T-delay,1)    
 plt.figure(0)
 plt.xlabel("t")
 plt.ylabel("Regret")
 plt.plot(np.cumsum(np.mean(opt - ts_rewards_per_experiment, axis=0)), 'r', linewidth = 3)
-plt.legend(["TS"])
+plt.plot(x, 2500*np.log(x), 'orange', linestyle="dashed", linewidth=3)
+plt.legend(["TS", "K log(t)"])
 plt.show()
 gts_means_of_rewards = np.transpose(gts_means_of_rewards)
 gts_precision_of_rewards = np.transpose(gts_precision_of_rewards)
@@ -154,4 +157,6 @@ for i in range(n_arms):
     variance = np.mean(1/gts_precision_of_rewards[i])
     plt.plot(x, norm.pdf(x, np.mean(gts_means_of_rewards[i]), math.sqrt(variance)), label="{}".format(i), linewidth = 2)
 plt.legend()
+plt.xlabel("X")
+plt.ylabel("P(X)")
 plt.show()

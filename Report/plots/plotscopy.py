@@ -32,15 +32,19 @@ plt.ylabel('Conversion rate')
 plt.show()
 #plt.plot(x, conv_c3(x), 'b')
 y = [conv_c3(a) for a in x]
-# MAGIC PLOT
-# agg = [conv_c1(x)+conv_c2(x)+conv_c3(a) for a in x]
-# plt.plot(x,  agg, 'b')
+#MAGIC PLOT
+#agg = [conv_c1(x)+conv_c2(x)+conv_c3(a) for a in x]
+#plt.plot(x,  agg, 'b')
 plt.plot(x,  y, 'b', linewidth=3)
 plt.xlabel('p')
 plt.ylabel('Conversion rate')
 plt.show()
 aggr = [(150*conv_c1(a)+100*conv_c2(a)+60*conv_c3(a))/310 for a in x]
+plt.plot(x, conv_c1(x), 'r', linewidth=3)
+plt.plot(x, conv_c2(x), 'g', linewidth=3)
+plt.plot(x,  y, 'b', linewidth=3)
 plt.plot(x, aggr, 'orange', linestyle="dotted", linewidth=5)
+y = [conv_c3(a) for a in x]
 plt.xlabel('p')
 plt.ylabel('Conversion rate')
 plt.legend(["Class 1", "Class 2", "Class 3", "Aggregate"])
