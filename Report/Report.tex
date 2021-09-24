@@ -499,6 +499,11 @@ Step 3 requires to adopt an upper-confidence bound approach. The algorithm we us
 where $n_a(t-1)$ is the number of times arm $a$ has been pulled before timestep $t$. The factor 80 is a normalizing constant, since the original expression of the UCB1 algorithm bound comes from the Hoeffding bound, which is made to estimate the expected value of a random variable with support in [0,1]. Since the rewards have much larger values, we need to adjust the respective upper bound on their expected value.
 
 The regret of the UCB algorithm is: 
+\begin{figure}[H]
+\centering
+  \includegraphics[scale = 0.7, center]{3r}
+  \caption{Regret plots of the UCB algorithm.}
+\end{figure}
 
 
 		\section{Thompson Sampling}
@@ -534,6 +539,11 @@ kernel = C(1e5,'fixed') * RBF([2*0.15, 5*0.15],
 \end{lstlisting}
  
 The kernel's length scale is a vector in the form $k*[0.2, 0.5]$, to compensate for the difference in scale of the input variables (bids are spaced by 0.2, while prices are spaced by 0.5). The resulting kernel makes each sample have symmetric influence on neighboring arms.
+\begin{figure}[H]
+\centering
+  \includegraphics[scale = 0.7, center]{Kernel_dim}
+  \caption{Kernel similarity function.}
+\end{figure}
 \section{Context Generation algorithm}
 In order to pull the best arm for each context, we train  9 learners together, based on the features (XX , 0X, 1X, X0, X1, 00, 01, 10 11). 
 Starting from a time instant $\bar t$ and once every time interval $t^*$ the algorithm checks if it is worth to split along one feature and   

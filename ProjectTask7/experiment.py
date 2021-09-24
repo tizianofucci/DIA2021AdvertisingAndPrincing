@@ -24,8 +24,8 @@ prices = np.array(UtilFunctions.global_prices)
 bids = UtilFunctions.global_bids
 prod_cost = 3.0
 n_arms = 10
-T = 365
-n_experiment = 10
+T = 31
+n_experiment = 1
 delay = 30
 contexts_prob = np.array([  np.array([np.array([conv_c1(x) for x in prices]),
                             np.array([conv_c1(x) for x in prices])]),

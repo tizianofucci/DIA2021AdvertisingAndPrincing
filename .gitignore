@@ -10,3 +10,5 @@
 
 *.cpython-39.pyc
 *.pyc
+
+Report/Report fake/*

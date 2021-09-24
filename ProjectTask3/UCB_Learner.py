@@ -23,7 +23,7 @@ class UCB_Learner(Learner):
         self.means[pulled_arm] = np.mean(self.rewards_per_arm[pulled_arm])
         for i in range(0,self.n_arms):
             if len(self.rewards_per_arm[i]) > 0:
-                ucb_coeff = 80  # Multiplier used for rescaling the upper bound. Used for tuning exploration/exploitation.
+                ucb_coeff = 10 # Multiplier used for rescaling the upper bound. Used for tuning exploration/exploitation.
                 self.upper_bounds[i] = self.means[i] + ucb_coeff*sqrt((2*log(self.t+1))/len(self.rewards_per_arm[i]))
             else:
                 self.upper_bounds[i] = 0
